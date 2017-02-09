@@ -1,0 +1,107 @@
+/********************** common **********************/
+
+#wrapper {
+    max-width: 1020px;
+    padding: 30px 32px;
+    margin: 0 auto;
+}
+
+
+/***** navigation ****/
+
+img.logo {
+    float: left;
+    padding: 2% 5%;
+}
+
+nav ul {
+    float: right;
+    margin-top: 30px;
+    padding: 2% 5%;
+}
+
+nav ul li {
+    list-style: none;
+    display: inline-block;
+    margin-left: 15px;
+}
+
+nav ul li a {
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 400;
+}
+
+#hamburgler.hamburgler-icon-wrapper {
+    display: none;
+}
+
+
+/***** letter settings ****/
+
+h1,h2,h3,h4,p,a {
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: 2px;
+}
+
+
+/********************** home **********************/
+
+section {
+    clear: both;
+}
+
+#container_home {
+    background: #2B303A;
+    height: 820px;
+}
+
+h1.scott_name {
+    text-align: center;
+    padding-top: 250px;
+    font-size: 60px;
+    letter-spacing: 30px;
+    color: #ffffff;
+}
+
+h2.occupation {
+    text-align: center;
+    color: #ffffff;
+    letter-spacing: 4px;
+}
+
+
+/********************** media query **********************/
+
+@media(max-width: 768px) {
+    h1.scott_name {
+        font-size: 4vw;
+        letter-spacing: 12px;
+    }
+    h2.occupation {
+        font-size: 3vw;
+    }
+}
+
+@media(max-width: 630px) {
+    /* show humburgler menu*/
+    #hamburgler.hamburgler-icon-wrapper {
+        display: block;
+    }
+    ul.hamburgler-menu-list li {
+        padding-bottom: 12px;
+    }
+    ul.hamburgler-menu-list li a {
+        text-decoration: none;
+        color: #ffffff;
+    }
+    /* hide desktop size menu*/
+    ul.main_nav {
+        display: none;
+    }
+    #container_home {
+        height: 758px;
+    }
+}
