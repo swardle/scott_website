@@ -35,7 +35,7 @@ ul.footer_nav li a {
     text-decoration: none;
     font-weight: 400;
 }
-
+/*hide humburgler menu */
 #hamburgler.hamburgler-icon-wrapper {
     display: none;
 }
@@ -59,6 +59,34 @@ h3 {
     color: black;
 }
 
+section{
+    margin-bottom:10%;
+}
+
+
+/***** header top  text****/
+
+.absoluteContainer {
+    /*position: relative;*/
+    max-width: 1024px;
+    height: 470px;
+    margin: 0 auto;
+}
+
+/*top header page title*/
+.page_title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 48%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    /*max-width: 800px;*/
+    color: white;
+    font-size: 40px;
+}
+
 
 /***** footer ****/
 
@@ -79,8 +107,8 @@ footer p {
     font-size: 9px;
 }
 
-i.fa.fa-twitter,
-i.fa.fa-linkedin {
+.social_media i.fa.fa-twitter,
+.social_media i.fa.fa-linkedin {
     font-size: 20px;
     color: #ffffff;
 }
@@ -91,11 +119,6 @@ i.fa.fa-twitter {
 
 
 /********************** home **********************/
-
-
-/*section {
-    clear: both;
-}*/
 
 .container.home {
     background: #2B303A;
@@ -122,15 +145,25 @@ h2.occupation {
 header.header_top {
     height: 470px;
     background: url(../img/1.jpg) no-repeat center center;
+    background-size: cover;
+    position: relative;
 }
 
-section.blog_intro {
-    display: inline-block;
-}
-
-p.blog_intro {
+article.blog_list {
+    width: 61.8%;
     max-width: 630px;
+}
+
+article.blog_list p {
     margin-bottom: 30px;
+}
+
+article.blog_list.blog_list_second {
+    margin-top: 65px;
+}
+
+img.blog_img {
+    width: 100%;
 }
 
 a.button_read_more {
@@ -138,15 +171,6 @@ a.button_read_more {
     border: 2px solid black;
     padding: 8px 12px;
     color: black;
-}
-
-article.blog_list {
-    margin-top: 65px;
-}
-
-img.blog_img {
-    max-width: 630px;
-    width: 100%;
 }
 
 aside {
@@ -168,7 +192,8 @@ aside h3 {
     margin: 0 0 20px 25px;
 }
 
-.social_media_side i.fa.fa-twitter,
+/*social media in aside*/
+i.fa.fa-twitter,
 i.fa.fa-linkedin {
     color: black;
     font-size: 25px;
@@ -182,14 +207,13 @@ ul.list_blog_title li {
     list-style: none;
 }
 
+/*pen icon*/
 i.fa.fa-pencil {
     margin-right: 10px;
 }
 
 
 /********************** media query **********************/
-
-@media(max-width: 990px) {}
 
 @media(max-width: 768px) {
     h1.scott_name {
@@ -199,11 +223,18 @@ i.fa.fa-pencil {
     h2.occupation {
         font-size: 3vw;
     }
-    img.blog_img {
-        max-width: 400px;
+    article.blog_list {
+        width: 100%;
     }
-    p.blog_intro {
-        max-width: 400px;
+    aside {
+        float: none;
+        width: 100%;
+        background: none;
+        padding: 0;
+        margin: 0;
+    }
+    .page_title {
+        font-size: 5vw;
     }
 }
 
@@ -211,12 +242,14 @@ i.fa.fa-pencil {
     /* show humburgler menu*/
     #hamburgler.hamburgler-icon-wrapper {
         display: block;
+        z-index: 2;
     }
     /* hamburgler menu navigation position down*/
     ul.hamburgler-menu-list {
         position: absolute;
         top: 53%;
         left: 50%;
+
     }
     ul.hamburgler-menu-list li {
         padding-bottom: 12px;
@@ -248,16 +281,13 @@ i.fa.fa-pencil {
     .container.home {
         height: 758px;
     }
+
+    .absoluteContainer{
+        height: 340px;
+    }
 }
 
 @media(max-width: 425px) {
-    aside {
-        float: none;
-        width: 100%;
-        background: none;
-        padding: 0;
-        margin: 0;
-    }
     ul.footer_nav {
         padding: 0;
         padding-top: 20px;
