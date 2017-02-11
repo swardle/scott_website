@@ -13,8 +13,21 @@ function checkNav() {
 
 function closeNav() {
   document.body.classList.remove('hamburgler-active');
+  var title = document.getElementById('page_title');
+  title.style.display = "block"; 
 }
 
 function openNav() {
   document.body.classList.add('hamburgler-active');
+  var title = document.getElementById('page_title');
+  title.style.display = "none"; 
 }
+
+
+
+
+
+
+
+// when clic hamburgler, hide page description, Seiko add this code
+//document.getElementById('page_title').style.display = 'none';
