@@ -35,7 +35,10 @@ ul.footer_nav li a {
     text-decoration: none;
     font-weight: 400;
 }
+
+
 /*hide humburgler menu */
+
 #hamburgler.hamburgler-icon-wrapper {
     display: none;
 }
@@ -59,8 +62,8 @@ h3 {
     color: black;
 }
 
-section{
-    margin-bottom:10%;
+section {
+    margin-bottom: 10%;
 }
 
 
@@ -73,7 +76,9 @@ section{
     margin: 0 auto;
 }
 
+
 /*top header page title*/
+
 #page_title {
     position: absolute;
     left: 0;
@@ -94,6 +99,7 @@ footer {
     background: #2B303A;
     text-align: center;
     border-bottom: 6px solid #B92F40;
+    clear:both;
 }
 
 ul.footer_nav {
@@ -144,9 +150,17 @@ h2.occupation {
 
 header.header_top {
     height: 470px;
+    position: relative;
+}
+
+header.header_top.blog {
     background: url(../img/1.jpg) no-repeat center center;
     background-size: cover;
-    position: relative;
+}
+
+header.header_top.about {
+    background: url(../img/3.jpg) no-repeat center center;
+    background-size: cover;
 }
 
 article.blog_list {
@@ -192,7 +206,9 @@ aside h3 {
     margin: 0 0 20px 25px;
 }
 
+
 /*social media in aside*/
+
 i.fa.fa-twitter,
 i.fa.fa-linkedin {
     color: black;
@@ -207,10 +223,45 @@ ul.list_blog_title li {
     list-style: none;
 }
 
+
 /*pen icon*/
+
 i.fa.fa-pencil {
     margin-right: 10px;
 }
+
+
+/********************** about **********************/
+
+.about_intro {
+    text-align: center;
+    background: #EDEEEF;
+}
+
+.about_intro header {
+    padding: 10%;
+}
+
+section.about_intro {
+    margin-bottom: 2%;
+}
+
+section.about_intro header h2 {
+    margin-bottom: 0;
+}
+
+section.profile img {
+    max-width: 330px;
+    width: 100%;
+    float: left;
+    margin-right: 5%;
+}
+
+section.gallery img {
+    float: left;
+    width: 24.99999%;
+}
+
 
 
 /********************** media query **********************/
@@ -236,6 +287,15 @@ i.fa.fa-pencil {
     #page_title {
         font-size: 5vw;
     }
+    section.about_intro header h2 {
+        font-size: 4vw;
+    }
+    section.about_intro header h3 {
+        font-size: 3vw;
+    }
+    section.profile img {
+        margin-bottom: 5%;
+    }
 }
 
 @media(max-width: 630px) {
@@ -249,7 +309,6 @@ i.fa.fa-pencil {
         position: absolute;
         top: 53%;
         left: 50%;
-
     }
     ul.hamburgler-menu-list li {
         padding-bottom: 12px;
@@ -281,8 +340,7 @@ i.fa.fa-pencil {
     .container.home {
         height: 758px;
     }
-
-    .absoluteContainer{
+    .absoluteContainer {
         height: 340px;
     }
 }

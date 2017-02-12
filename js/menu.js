@@ -19,6 +19,7 @@ function closeNav() {
 
 function openNav() {
   document.body.classList.add('hamburgler-active');
+  // when click hamburgler, hide page description, Seiko add this code
   var title = document.getElementById('page_title');
   title.style.display = "none"; 
 }
@@ -28,6 +29,3 @@ function openNav() {
 
 
 
-
-// when clic hamburgler, hide page description, Seiko add this code
-//document.getElementById('page_title').style.display = 'none';
