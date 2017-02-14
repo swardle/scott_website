@@ -14,7 +14,7 @@
 
 <body>
     <div class="container">
-        <header class="header_top blog">
+        <header class="header_top about">
             <div class="hamburgler-menu">
                 <ul class="hamburgler-menu-list">
                     <li><a href="index.html">HOME</a></li>
@@ -39,52 +39,41 @@
             </nav>
             <div class="absoluteContainer">
                 <div id="page_title">
-                    This is Scott's blog. Each page's introduction comes here
+                    Get in touch
                 </div>
             </div>
         </header>
         <div id="wrapper">
-            <aside>
-                <div class="social_media_side">
+            <section>
+                <div class="social_media top">
                     <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter" aria-hidden="true"></i></a>
                     <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
                 </div>
-                <h3>RECENT POST</h3>
-                <ul class="list_blog_title">
-                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;blog title will be here
-                    </li>
-                    <br>
-                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;blog title will be here
-                    </li>
-                    <br>
-                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;blog title will be here
-                    </li>
-                    <br>
-                </ul>
-            </aside>
-            <section>
-                <article class="blog_list">
-                    <header>
-                        <h2>Blog title will be here</h2>
-                        <p>
-                            <time datetime="2017-02-14">Feb 14, 2017</time>
-                        </p>
-                        <img src="img/2.jpg" class="blog_img">
-                    </header>
-                    <p>Lucas ipsum dolor sit amet moff yoda solo hutt kit fett calrissian gonk endor obi-wan. Luke darth skywalker solo vader. Grievous kessel luuke gonk leia owen. Mon mara luke dagobah luuke. Mon mace owen darth moff hutt ventress vader darth. Kenobi luke mustafar droid darth tatooine. K-3po hutt mustafar droid amidala. </p>
-                    <a href="blog1.html" class="button_read_more">READ MORE</a>
-                </article>
-                <article class="blog_list blog_list_second">
-                    <header>
-                        <h2>Blog title will be here</h2>
-                        <p>
-                            <time datetime="2017-02-14">Feb 14, 2017</time>
-                        </p>
-                        <img src="img/2.jpg" class="blog_img">
-                    </header>
-                    <p>Lucas ipsum dolor sit amet moff yoda solo hutt kit fett calrissian gonk endor obi-wan. Luke darth skywalker solo vader. Grievous kessel luuke gonk leia owen. Mon mara luke dagobah luuke. Mon mace owen darth moff hutt ventress vader darth. Kenobi luke mustafar droid darth tatooine. K-3po hutt mustafar droid amidala. </p>
-                    <a href="blog1.html" class="button_read_more">READ MORE</a>
-                </article>
+                <form action="submit.php" method="post" onsubmit="return ValidateEmail()">
+                    <div class="row">
+                        <div class="column-half name">
+                            <input type="text" name="name" placeholder="NAME" value="" id="name">
+                        </div>
+                        <div class="column-half">
+                            <input type="email" name="e-mail" placeholder="E-MAIL" value="" id="email">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="column-full">
+                            <input type="text" name="subject" placeholder="SUBJECT" value="" id="subject">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <textarea name="comment" placeholder="MESSAGE" value="" id="message"></textarea>
+                    </div>
+                    <div class="row submit">
+                        <input type="submit" value="SUBMIT" id="submit">
+                    </div>
+                    <p class="name-error"></p>
+                    <p class="email-error"></p>
+                    <p class="subject-error"></p>
+                    <p class="message-error"></p>
+                </form>
             </section>
         </div>
         <footer>
