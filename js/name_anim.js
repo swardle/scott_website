@@ -1,14 +1,4 @@
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// lerp from a to b in time t where t is 0.0 to 1.0
-function lerp(a, b, t)
-{
-    return a + t * (b - a);
-}
-
 function RandomKatakanaString(org, percentage) {
     var letter_to_copy = Math.floor(org.length * percentage);
     var s = org.slice(0, letter_to_copy);
