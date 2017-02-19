@@ -23,7 +23,7 @@ function RandomKatakanaString(org, percentage) {
 }
 
 function myAnim() {
-    var animation_max_frame = 350;
+    var animation_max_frame = 50;
     var animation_cur_frame = 0
 
     var name_obj = document.getElementsByClassName("scott_name")[0];
@@ -34,7 +34,7 @@ function myAnim() {
     var occu_original_html = occu_obj.innerHTML;
     occu_obj.innerHTML = RandomKatakanaString(occu_original_html, animation_cur_frame / animation_max_frame);
 
-    var id = setInterval(updateFrame, 5);
+    var id = setInterval(updateFrame, 30);
 
     function updateFrame() {
         if (animation_cur_frame == animation_max_frame) {
