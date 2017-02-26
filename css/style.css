@@ -50,11 +50,17 @@ h1,
 h2,
 h3,
 h4,
-p,
 a {
     font-family: 'Roboto', sans-serif;
     letter-spacing: 2px;
     color: #4A4A4A;
+}
+
+p{
+   font-family: 'Roboto', sans-serif;
+    letter-spacing: 1px;
+    color: #4A4A4A; 
+    line-height: 1.8em;
 }
 
 h2,
