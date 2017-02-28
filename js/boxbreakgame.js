@@ -203,20 +203,22 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.PlayerVelocityX = 0;
     this.PlayerVelocityY = 0;
     this.BallVelocityX = 0;
-    this.BallVelocityY = -8;
-    this.Ball = new Box(0, 128, 3, 3);
+    this.BallVelocityY = 8;
+    this.BallOldPos=[8, 120]
+    this.Ball = new Box(8, 128, 3, 3);
     this.Player = new Box(0, 256 - 4, 16, 4);
     this.Field0Box = new Box(0, 0, 16, 4);
-    this.Field = [
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-        "*".repeat(32),
-    ];
+    this.BallHit = false;
+    this.Field = [];
+    for(var i=0;i<8;i++)
+    {
+        var temp = [];        
+        for(var j=0;j<32;j++)
+        {
+            temp.push(1);
+        }
+        this.Field.push(temp);
+    }
 }
 
 Game.prototype.RightButton = function() {
@@ -235,6 +237,13 @@ Game.prototype.LeftButton = function() {
     }
 };
 
+
+Game.prototype.Reset = function() {
+    this.BallOldPos=[8, 120]
+    this.Ball = new Box(8, 128, 3, 3);
+    this.BallVelocityX = 0;
+    this.BallVelocityY = 8;    
+};
 Game.prototype.Draw = function() {
     var ctx = this.Ctx;
 
@@ -258,7 +267,7 @@ Game.prototype.Draw = function() {
         row = this.Field[by];
         var y = this.Field0Box.Y + by * this.Field0Box.Height;
         for (bx = 0; bx < row.length; bx++) {
-            if (row[bx] == '*') {
+            if (row[bx] == 1) {
                 var x = this.Field0Box.X + bx * this.Field0Box.Width;
                 ctx.fillRect(x, y, this.Field0Box.Width, this.Field0Box.Height);
             }
@@ -269,9 +278,18 @@ Game.prototype.Draw = function() {
     ctx.fillStyle = 'rgb(0, 0, 200)';
     ctx.fillRect(this.Ball.X, this.Ball.Y, this.Ball.Width, this.Ball.Height);
 
-    // Animate Ball
-    this.Ball.X += this.BallVelocityX;
-    this.Ball.Y += this.BallVelocityY;
+    // If the ball was hit last frame don't move it as it has already been moved when the ball was hit. 
+    if(!this.BallHit)
+    {
+        // Animate Ball
+        this.BallOldPos = [this.Ball.X, this.Ball.Y];
+        this.Ball.X += this.BallVelocityX;
+        this.Ball.Y += this.BallVelocityY;        
+    }
+    else
+    {
+        this.BallHit = false;
+    }
 
     // did ball hit field
     var testBox = new Box(0, 0, this.Field0Box.Width, this.Field0Box.Height);
@@ -279,13 +297,13 @@ Game.prototype.Draw = function() {
         row = this.Field[by];
         testBox.Y = this.Field0Box.Y + by * this.Field0Box.Height;
         for (bx = 0; bx < row.length; bx++) {
-            if (row[bx] == '*') {
+            if (row[bx] == 1) {
                 testBox.X = this.Field0Box.X + bx * this.Field0Box.Width;
-                a = new Line(this.Ball.X - this.BallVelocityX,
-                    this.Ball.Y - this.BallVelocityY, this.Ball.X, this.Ball.Y);
+                a = new Line(this.BallOldPos[0],
+                        this.BallOldPos[1], this.Ball.X, this.Ball.Y);
                 HitLoc = LineVsBox(a, testBox);
-                if (HitLoc.IsHit) {
-                    row[bx] = '_';
+                if (HitLoc.IsHit && HitLoc.Time < 8) {
+                    row[bx] = 0;
                     ballv = [this.BallVelocityX, this.BallVelocityY];
                     vnew = ReflectVector(ballv, HitLoc.Normal);
                     this.BallVelocityX = vnew[0];
@@ -296,16 +314,23 @@ Game.prototype.Draw = function() {
     }
 
     // did the ball hit the player
-    a = new Line(this.Ball.X - this.BallVelocityX,
-        this.Ball.Y - this.BallVelocityY, this.Ball.X, this.Ball.Y);
+    a = new Line(this.BallOldPos[0],
+        this.BallOldPos[1], this.Ball.X, this.Ball.Y);
     HitLoc = LineVsBox(a, this.Player);
-    if (HitLoc.IsHit) {
-        ballv = [this.BallVelocityX, this.BallVelocityY];
-        vnew = ReflectVector(ballv, HitLoc.Normal);
+    if (HitLoc.IsHit && HitLoc.Time < 8) {
+        var balldir =  NormalizeLine(a);
+        var justBeforeHit = HitLoc.Time -1;
+        var colBallPos = [a.X1 + balldir[0] * justBeforeHit, 
+                            a.Y1 + balldir[1] * justBeforeHit];
+        vnew = ReflectVector(balldir, HitLoc.Normal);
         vnew[0] += this.PlayerVelocityX;
         vnew = Normalize(vnew);
-        this.BallVelocityX = vnew[0];
-        this.BallVelocityY = vnew[1];
+        this.BallOldPos = colBallPos;
+        this.Ball.X = colBallPos[0] + vnew[0]*(8-justBeforeHit);
+        this.Ball.Y = colBallPos[1] + vnew[1]*(8-justBeforeHit);
+        this.BallVelocityX = vnew[0]*8;
+        this.BallVelocityY = vnew[1]*8;
+        this.BallHit = true;
     }
 
     this.PlayerVelocityX = 0;
@@ -315,22 +340,13 @@ Game.prototype.Draw = function() {
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
 };
 
-var gGame = null;
 
-document.addEventListener('keydown', function(event) {
-    if (event.keyCode == 37) {
-        if (gGame !== null) {
-            gGame.LeftButton();
-        }
-    } else if (event.keyCode == 39) {
-        if (gGame !== null) {
-            gGame.RightButton();
-        }
-    }
-});
 
-function myAnim() {
-    var id = setInterval(updateFrame, 60);
+
+
+function newGame() {
+    var gGame = null;
+    console.log("myNewAnim");
     var canvas = document.getElementById('canvas');
     if (canvas.getContext) {
         var backcanvas = document.createElement('canvas');
@@ -339,13 +355,33 @@ function myAnim() {
         var backctx = backcanvas.getContext('2d');
         var frontctx = canvas.getContext('2d');
 
-        gGame = new Game(canvas, backcanvas, frontctx, backctx);
-
+        if(gGame === null)
+        {
+            console.log("myNewAnim");
+            gGame = new Game(canvas, backcanvas, frontctx, backctx);            
+            var id = setInterval(updateFrame, 60);
+        }
     }
+
+
+    document.addEventListener('keydown', function(event) {
+        if (event.keyCode == 37) {
+            if (gGame !== null) {
+                gGame.LeftButton();
+            }
+        } else if (event.keyCode == 39) {
+            if (gGame !== null) {
+                gGame.RightButton();
+            }
+        } else if (event.keyCode == 32) {
+            if (gGame !== null) {
+                gGame.Reset();
+            }
+        }
+    });
 
     function updateFrame() {
         gGame.Draw();
     }
 }
 
-myAnim();
