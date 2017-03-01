@@ -1,8 +1,23 @@
+var gPlayerSpeed = 8;
+var gBallSpeed = 8;
+// x,y,width,hieght
+var gInitBallBox = [8, 128, 3, 3];
+var gInitPlayerBox = [0, 256 - 4, 16, 4];
+var gInitField0Box = [0, 0, 16, 4];
+
+
 function Box(x, y, width, height) {
     this.X = x;
     this.Y = y;
     this.Width = width;
     this.Height = height;
+}
+
+function BoxFromArray(boxarray) {
+    this.X = boxarray[0];
+    this.Y = boxarray[1];
+    this.Width = boxarray[2];
+    this.Height = boxarray[3];
 }
 
 function Line(x1, y1, x2, y2) {
@@ -12,10 +27,18 @@ function Line(x1, y1, x2, y2) {
     this.Y2 = y2;
 }
 
+function LineFromArray(linearray) {
+    this.X1 = linearray[0];
+    this.Y1 = linearray[1];
+    this.X2 = linearray[2];
+    this.Y2 = linearray[3];
+}
+
+
 // return a normal from a line
 function NormalizeLine(a) {
     // a normal 
-    var l = [a.X2 - a.X1, a.Y2 - a.Y1];
+    var l = [a.X1 - a.X2, a.Y1 - a.Y2];
     var llen = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
     var oollen = 1.0 / llen;
     l[0] = l[0] * oollen;
@@ -63,10 +86,10 @@ function LineVsBox(a, b) {
     }
 
     // time to hit left, right, bottom, top
-    var t1 = (b.X - a.X1) * dfx;
-    var t2 = (b.X + b.Width - a.X1) * dfx;
-    var t3 = (b.Y + b.Height - a.Y1) * dfy;
-    var t4 = (b.Y - a.Y1) * dfy;
+    var t1 = (b.X - a.X2) * dfx;
+    var t2 = (b.X + b.Width - a.X2) * dfx;
+    var t3 = (b.Y + b.Height - a.Y2) * dfy;
+    var t4 = (b.Y - a.Y2) * dfy;
 
     var xside = [0, 0];
     var yside = [0, 0];
@@ -202,12 +225,13 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.WorldHight = 256;
     this.PlayerVelocityX = 0;
     this.PlayerVelocityY = 0;
-    this.BallVelocityX = 0;
-    this.BallVelocityY = 8;
-    this.BallOldPos = [8, 120]
-    this.Ball = new Box(8, 128, 3, 3);
-    this.Player = new Box(0, 256 - 4, 16, 4);
-    this.Field0Box = new Box(0, 0, 16, 4);
+    this.BallVelocityX = -gBallSpeed;
+    this.BallVelocityY = 0;
+    this.BallOldPos = [gInitBallBox[0] + gBallSpeed, gInitBallBox[1]];
+    this.WorldBox = new BoxFromArray([0,0,this.WorldWidth,this.WorldHight]);
+    this.Ball = new BoxFromArray(gInitBallBox);
+    this.Player = new BoxFromArray(gInitPlayerBox);
+    this.Field0Box = new BoxFromArray(gInitField0Box);
     this.BallHit = false;
     this.Field = [];
     for (var i = 0; i < 8; i++) {
@@ -220,27 +244,39 @@ function Game(canvas, backcanvas, frontctx, backctx) {
 }
 
 Game.prototype.RightButton = function() {
-    this.PlayerVelocityX = 8;
-    this.Player.X += 8;
+    this.PlayerVelocityX = gPlayerSpeed;
+    this.Player.X += gPlayerSpeed;
     if (this.Player.X + this.Player.Width > this.WorldWidth) {
         this.Player.X = this.WorldWidth - this.Player.Width;
     }
+    console.log("RightButton Key");
 };
 
 Game.prototype.LeftButton = function() {
-    this.PlayerVelocityX = -8;
-    this.Player.X -= 8;
+    this.PlayerVelocityX = -gPlayerSpeed;
+    this.Player.X -= gPlayerSpeed;
     if (this.Player.X < 0) {
         this.Player.X = 0;
     }
+    console.log("LeftButton Key");
 };
 
 
 Game.prototype.Reset = function() {
-    this.BallOldPos = [8, 120];
-    this.Ball = new Box(8, 128, 3, 3);
-    this.BallVelocityX = 0;
-    this.BallVelocityY = 8;
+    this.BallOldPos = [gInitBallBox[0] + gBallSpeed, gInitBallBox[1] ];
+    this.Ball = new BoxFromArray(gInitBallBox);
+    this.BallVelocityX = -gBallSpeed;
+    this.BallVelocityY = 0;
+    this.Field = [];
+    for (var i = 0; i < 8; i++) {
+        var temp = [];
+        for (var j = 0; j < 32; j++) {
+            temp.push(1);
+        }
+        this.Field.push(temp);
+    }
+    console.log("Reset Key");
+
 };
 Game.prototype.Draw = function() {
     var ctx = this.Ctx;
@@ -259,6 +295,11 @@ Game.prototype.Draw = function() {
     var hitloc = null;
     var ballv = 0;
     var vnew = 0;
+    var balldir = 0;
+    var justBeforeHit = 0;
+    var colBallPos = [0, 0, 0, 0];
+
+
     // Draw Field
     ctx.fillStyle = 'rgb(200, 0, 0)';
     for (by = 0; by < this.Field.length; by++) {
@@ -288,44 +329,104 @@ Game.prototype.Draw = function() {
 
     // did ball hit field
     var testBox = new Box(0, 0, this.Field0Box.Width, this.Field0Box.Height);
-    for (by = 0; by < this.Field.length; by++) {
+    var IsHit = false;
+    // loop backward so I hit the first row first. 
+    for (by = this.Field.length-1; by > 0 && !IsHit; by--) {
         row = this.Field[by];
         testBox.Y = this.Field0Box.Y + by * this.Field0Box.Height;
-        for (bx = 0; bx < row.length; bx++) {
+        for (bx = 0; bx < row.length && !IsHit; bx++) {
             if (row[bx] == 1) {
                 testBox.X = this.Field0Box.X + bx * this.Field0Box.Width;
-                a = new Line(this.BallOldPos[0],
-                    this.BallOldPos[1], this.Ball.X, this.Ball.Y);
+                a = new Line(this.Ball.X, this.Ball.Y, this.BallOldPos[0],
+                    this.BallOldPos[1]);
                 HitLoc = LineVsBox(a, testBox);
-                if (HitLoc.IsHit && HitLoc.Time < 8) {
+                if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < gBallSpeed) {
+                    // Delete the box we hit. 
                     row[bx] = 0;
-                    ballv = [this.BallVelocityX, this.BallVelocityY];
-                    vnew = ReflectVector(ballv, HitLoc.Normal);
-                    this.BallVelocityX = vnew[0];
-                    this.BallVelocityY = vnew[1];
+                    IsHit = true; // don't hit more then once. The ball is going faster then the size of block. :) 
+                    HitLoc = LineVsBox(a, testBox);
+                    // Find where the ball colision happened. 
+                    balldir = NormalizeLine(a);
+                    justBeforeHit = HitLoc.Time - 1;
+                    colBallPos = [a.X1 + balldir[0] * justBeforeHit,
+                        a.Y1 + balldir[1] * justBeforeHit
+                    ];
+                    // Don't want to deal with ball not moving in strait lines so set BallOldPos to the colision point. 
+                    this.BallOldPos = colBallPos;
+                    // Calulate the reflected vector so we have the new direction. 
+                    vnew = ReflectVector(balldir, HitLoc.Normal);
+                    vnew = Normalize(vnew);
+                    // From the colision point move the ball away keeping the same speed. 
+                    this.Ball.X = colBallPos[0] + vnew[0] * (gBallSpeed - justBeforeHit);
+                    this.Ball.Y = colBallPos[1] + vnew[1] * (gBallSpeed - justBeforeHit);
+                    // Set the new velocity given the reflected vector. 
+                    this.BallVelocityX = vnew[0] * gBallSpeed;
+                    this.BallVelocityY = vnew[1] * gBallSpeed;
                 }
             }
         }
     }
 
-    // did the ball hit the player
-    a = new Line(this.BallOldPos[0],
-        this.BallOldPos[1], this.Ball.X, this.Ball.Y);
-    HitLoc = LineVsBox(a, this.Player);
-    if (HitLoc.IsHit && HitLoc.Time < 8) {
-        var balldir = NormalizeLine(a);
-        var justBeforeHit = HitLoc.Time - 1;
-        var colBallPos = [a.X1 + balldir[0] * justBeforeHit,
+    // Check to see if the ball is going out of the world
+    a = new Line(this.Ball.X, this.Ball.Y, this.BallOldPos[0],
+        this.BallOldPos[1]);
+    HitLoc = LineVsBox(a, this.WorldBox);
+    // check it it hits the top or sides but not bottom 
+    if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < gBallSpeed && HitLoc.Normal[1] != 1) {
+        // Find where the ball colision happened. 
+        balldir = NormalizeLine(a);
+        justBeforeHit = HitLoc.Time - 1;
+        colBallPos = [a.X1 + balldir[0] * justBeforeHit,
             a.Y1 + balldir[1] * justBeforeHit
         ];
-        vnew = ReflectVector(balldir, HitLoc.Normal);
-        vnew[0] += this.PlayerVelocityX;
-        vnew = Normalize(vnew);
+        // Don't want to deal with ball not moving in strait lines so set BallOldPos to the colision point. 
         this.BallOldPos = colBallPos;
-        this.Ball.X = colBallPos[0] + vnew[0] * (8 - justBeforeHit);
-        this.Ball.Y = colBallPos[1] + vnew[1] * (8 - justBeforeHit);
-        this.BallVelocityX = vnew[0] * 8;
-        this.BallVelocityY = vnew[1] * 8;
+        // Calulate the reflected vector so we have the new direction. 
+        vnew = ReflectVector(balldir, HitLoc.Normal);
+        vnew = Normalize(vnew);
+        // From the colision point move the ball away keeping the same speed. 
+        this.Ball.X = colBallPos[0] + vnew[0] * (gBallSpeed - justBeforeHit);
+        this.Ball.Y = colBallPos[1] + vnew[1] * (gBallSpeed - justBeforeHit);
+        // Set the new velocity given the reflected vector. 
+        this.BallVelocityX = vnew[0] * gBallSpeed;
+        this.BallVelocityY = vnew[1] * gBallSpeed;
+
+    }
+
+
+    // did the ball hit the player
+    a = new Line(this.Ball.X, this.Ball.Y, this.BallOldPos[0],
+        this.BallOldPos[1]);
+    HitLoc = LineVsBox(a, this.Player);
+    if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < gBallSpeed) {
+        // Find where the ball colision happened. 
+        balldir = NormalizeLine(a);
+        justBeforeHit = HitLoc.Time - 1;
+        colBallPos = [a.X1 + balldir[0] * justBeforeHit,
+            a.Y1 + balldir[1] * justBeforeHit
+        ];
+        // Calulate the reflected vector so we have the new direction. 
+        vnew = ReflectVector(balldir, HitLoc.Normal);
+        vnew = Normalize(vnew);
+        // NormalizedDistFromLeftSize the left side of the box is -0.5 right size of the box is 0.5. 
+        var NormalizedDistFromLeftSize = (colBallPos[0] + (this.Ball.Width/2.0) - (this.Player.X + (this.Player.Width/2.0))) / this.Player.Width;
+        NormalizedDistFromLeftSize = Math.min(Math.max(NormalizedDistFromLeftSize, -0.5), 0.5);
+        // Move the range to be 1/4 * PI
+        //      this will make normallized vector using sin and cos like this \/
+        // If it is close to the right the ball goes right if left left. 
+        NormalizedDistFromLeftSize *= (1/2)*Math.PI;
+        vnew[0]= Math.sin(NormalizedDistFromLeftSize);
+        vnew[1]= -Math.cos(NormalizedDistFromLeftSize);
+
+        // Don't want to deal with ball not moving in strait lines so set BallOldPos to the colision point. 
+        this.BallOldPos = colBallPos;
+        // From the colision point move the ball away keeping the same speed. 
+        this.Ball.X = colBallPos[0] + vnew[0] * (gBallSpeed - justBeforeHit);
+        this.Ball.Y = colBallPos[1] + vnew[1] * (gBallSpeed - justBeforeHit);
+        // Set the new velocity given the reflected vector. 
+        this.BallVelocityX = vnew[0] * gBallSpeed;
+        this.BallVelocityY = vnew[1] * gBallSpeed;
+        // Mark that we have already moved the ball so we don't move it next frame 
         this.BallHit = true;
     }
 
