@@ -56,7 +56,7 @@ function LineVsBox(a, b) {
     var dfx = 90000.0;
     var dfy = 90000.0;
     if (Math.abs(rdir[0]) > 0.0001) {
-    	dfx = 1.0 / rdir[0];
+        dfx = 1.0 / rdir[0];
     }
     if (Math.abs(rdir[1]) > 0.0001) {
         dfy = 1.0 / rdir[1];
@@ -161,33 +161,33 @@ function BoxInBoxTest(a, b) {
 
 // function BoxTestTest()
 // {
-// 	var a = [
-// 	   [ new Box(0,0,10,10),    new Box(0,0,10,10),  true  ],   
-// 	   [ new Box(1,0,10,10),    new Box(0,0,10,10),  true  ],   
-// 	   [ new Box(9,0,10,10),    new Box(0,0,10,10),  true  ],   
-// 	   [ new Box(10,0,10,10),   new Box(0,0,10,10),  false ],   
-// 	   [ new Box(11,0,10,10),   new Box(0,0,10,10),  false ],   
-// 	   [ new Box(0,0,10,10),    new Box(1,0,10,10),  true  ],   
-// 	   [ new Box(0,0,10,10),    new Box(9,0,10,10),  true  ],   
-// 	   [ new Box(0,0,10,10),    new Box(10,0,10,10), false ],   
-// 	   [ new Box(0,0,10,10),    new Box(11,0,10,10), false ],   
-// 	   [ new Box(20,0,10,10),   new Box(20,0,10,10), true  ],   
-// 	   [ new Box(20,0,10,10),   new Box(19,0,10,10), true  ],   
-// 	   [ new Box(20,0,10,10),   new Box(11,0,10,10), true  ],   
-// 	   [ new Box(20,0,10,10),   new Box(10,0,10,10), false ],   
-// 	   [ new Box(20,0,10,10),   new Box(9,0,10,10),  false ],   
-// 	   [ new Box(20,0,10,10),   new Box(8,0,10,10),  false ],   
-// 	   [ new Box(20,0,10,10),   new Box(20,0,10,10), true  ],   
-// 	   [ new Box(19,0,10,10),   new Box(20,0,10,10), true  ],   
-// 	   [ new Box(11,0,10,10),   new Box(20,0,10,10), true  ],   
-// 	   [ new Box(10,0,10,10),   new Box(20,0,10,10), false ],   
-// 	   [ new Box(9,0,10,10),    new Box(20,0,10,10), false ],   
-// 	   [ new Box(8,0,10,10),    new Box(20,0,10,10), false ],   
-// 	]
-// 	for (var i = 0; i < a.length; ++i) {
-// 		var test = BoxInBoxTest(a[i][0], a[i][1]) == a[i][2];
-// 		console.log(""+i+" "+test);
-// 	}
+//  var a = [
+//     [ new Box(0,0,10,10),    new Box(0,0,10,10),  true  ],   
+//     [ new Box(1,0,10,10),    new Box(0,0,10,10),  true  ],   
+//     [ new Box(9,0,10,10),    new Box(0,0,10,10),  true  ],   
+//     [ new Box(10,0,10,10),   new Box(0,0,10,10),  false ],   
+//     [ new Box(11,0,10,10),   new Box(0,0,10,10),  false ],   
+//     [ new Box(0,0,10,10),    new Box(1,0,10,10),  true  ],   
+//     [ new Box(0,0,10,10),    new Box(9,0,10,10),  true  ],   
+//     [ new Box(0,0,10,10),    new Box(10,0,10,10), false ],   
+//     [ new Box(0,0,10,10),    new Box(11,0,10,10), false ],   
+//     [ new Box(20,0,10,10),   new Box(20,0,10,10), true  ],   
+//     [ new Box(20,0,10,10),   new Box(19,0,10,10), true  ],   
+//     [ new Box(20,0,10,10),   new Box(11,0,10,10), true  ],   
+//     [ new Box(20,0,10,10),   new Box(10,0,10,10), false ],   
+//     [ new Box(20,0,10,10),   new Box(9,0,10,10),  false ],   
+//     [ new Box(20,0,10,10),   new Box(8,0,10,10),  false ],   
+//     [ new Box(20,0,10,10),   new Box(20,0,10,10), true  ],   
+//     [ new Box(19,0,10,10),   new Box(20,0,10,10), true  ],   
+//     [ new Box(11,0,10,10),   new Box(20,0,10,10), true  ],   
+//     [ new Box(10,0,10,10),   new Box(20,0,10,10), false ],   
+//     [ new Box(9,0,10,10),    new Box(20,0,10,10), false ],   
+//     [ new Box(8,0,10,10),    new Box(20,0,10,10), false ],   
+//  ]
+//  for (var i = 0; i < a.length; ++i) {
+//      var test = BoxInBoxTest(a[i][0], a[i][1]) == a[i][2];
+//      console.log(""+i+" "+test);
+//  }
 // }
 // BoxTestTest();
 
@@ -204,17 +204,15 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.PlayerVelocityY = 0;
     this.BallVelocityX = 0;
     this.BallVelocityY = 8;
-    this.BallOldPos=[8, 120]
+    this.BallOldPos = [8, 120]
     this.Ball = new Box(8, 128, 3, 3);
     this.Player = new Box(0, 256 - 4, 16, 4);
     this.Field0Box = new Box(0, 0, 16, 4);
     this.BallHit = false;
     this.Field = [];
-    for(var i=0;i<8;i++)
-    {
-        var temp = [];        
-        for(var j=0;j<32;j++)
-        {
+    for (var i = 0; i < 8; i++) {
+        var temp = [];
+        for (var j = 0; j < 32; j++) {
             temp.push(1);
         }
         this.Field.push(temp);
@@ -239,10 +237,10 @@ Game.prototype.LeftButton = function() {
 
 
 Game.prototype.Reset = function() {
-    this.BallOldPos=[8, 120]
+    this.BallOldPos = [8, 120];
     this.Ball = new Box(8, 128, 3, 3);
     this.BallVelocityX = 0;
-    this.BallVelocityY = 8;    
+    this.BallVelocityY = 8;
 };
 Game.prototype.Draw = function() {
     var ctx = this.Ctx;
@@ -279,15 +277,12 @@ Game.prototype.Draw = function() {
     ctx.fillRect(this.Ball.X, this.Ball.Y, this.Ball.Width, this.Ball.Height);
 
     // If the ball was hit last frame don't move it as it has already been moved when the ball was hit. 
-    if(!this.BallHit)
-    {
+    if (!this.BallHit) {
         // Animate Ball
         this.BallOldPos = [this.Ball.X, this.Ball.Y];
         this.Ball.X += this.BallVelocityX;
-        this.Ball.Y += this.BallVelocityY;        
-    }
-    else
-    {
+        this.Ball.Y += this.BallVelocityY;
+    } else {
         this.BallHit = false;
     }
 
@@ -300,7 +295,7 @@ Game.prototype.Draw = function() {
             if (row[bx] == 1) {
                 testBox.X = this.Field0Box.X + bx * this.Field0Box.Width;
                 a = new Line(this.BallOldPos[0],
-                        this.BallOldPos[1], this.Ball.X, this.Ball.Y);
+                    this.BallOldPos[1], this.Ball.X, this.Ball.Y);
                 HitLoc = LineVsBox(a, testBox);
                 if (HitLoc.IsHit && HitLoc.Time < 8) {
                     row[bx] = 0;
@@ -318,18 +313,19 @@ Game.prototype.Draw = function() {
         this.BallOldPos[1], this.Ball.X, this.Ball.Y);
     HitLoc = LineVsBox(a, this.Player);
     if (HitLoc.IsHit && HitLoc.Time < 8) {
-        var balldir =  NormalizeLine(a);
-        var justBeforeHit = HitLoc.Time -1;
-        var colBallPos = [a.X1 + balldir[0] * justBeforeHit, 
-                            a.Y1 + balldir[1] * justBeforeHit];
+        var balldir = NormalizeLine(a);
+        var justBeforeHit = HitLoc.Time - 1;
+        var colBallPos = [a.X1 + balldir[0] * justBeforeHit,
+            a.Y1 + balldir[1] * justBeforeHit
+        ];
         vnew = ReflectVector(balldir, HitLoc.Normal);
         vnew[0] += this.PlayerVelocityX;
         vnew = Normalize(vnew);
         this.BallOldPos = colBallPos;
-        this.Ball.X = colBallPos[0] + vnew[0]*(8-justBeforeHit);
-        this.Ball.Y = colBallPos[1] + vnew[1]*(8-justBeforeHit);
-        this.BallVelocityX = vnew[0]*8;
-        this.BallVelocityY = vnew[1]*8;
+        this.Ball.X = colBallPos[0] + vnew[0] * (8 - justBeforeHit);
+        this.Ball.Y = colBallPos[1] + vnew[1] * (8 - justBeforeHit);
+        this.BallVelocityX = vnew[0] * 8;
+        this.BallVelocityY = vnew[1] * 8;
         this.BallHit = true;
     }
 
@@ -355,10 +351,9 @@ function newGame() {
         var backctx = backcanvas.getContext('2d');
         var frontctx = canvas.getContext('2d');
 
-        if(gGame === null)
-        {
+        if (gGame === null) {
             console.log("myNewAnim");
-            gGame = new Game(canvas, backcanvas, frontctx, backctx);            
+            gGame = new Game(canvas, backcanvas, frontctx, backctx);
             var id = setInterval(updateFrame, 60);
         }
     }
@@ -384,4 +379,3 @@ function newGame() {
         gGame.Draw();
     }
 }
-
