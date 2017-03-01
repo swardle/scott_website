@@ -225,9 +225,9 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.WorldHight = 256;
     this.PlayerVelocityX = 0;
     this.PlayerVelocityY = 0;
-    this.BallVelocityX = -gBallSpeed;
-    this.BallVelocityY = 0;
-    this.BallOldPos = [gInitBallBox[0] + gBallSpeed, gInitBallBox[1]];
+    this.BallVelocityX = 0;
+    this.BallVelocityY = gBallSpeed;
+    this.BallOldPos = [gInitBallBox[0], gInitBallBox[1]-gBallSpeed];
     this.WorldBox = new BoxFromArray([0,0,this.WorldWidth,this.WorldHight]);
     this.Ball = new BoxFromArray(gInitBallBox);
     this.Player = new BoxFromArray(gInitPlayerBox);
@@ -263,10 +263,10 @@ Game.prototype.LeftButton = function() {
 
 
 Game.prototype.Reset = function() {
-    this.BallOldPos = [gInitBallBox[0] + gBallSpeed, gInitBallBox[1] ];
+    this.BallOldPos = [gInitBallBox[0], gInitBallBox[1] - gBallSpeed];
     this.Ball = new BoxFromArray(gInitBallBox);
-    this.BallVelocityX = -gBallSpeed;
-    this.BallVelocityY = 0;
+    this.BallVelocityX = 0;
+    this.BallVelocityY = gBallSpeed;
     this.Field = [];
     for (var i = 0; i < 8; i++) {
         var temp = [];
