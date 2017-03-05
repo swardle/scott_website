@@ -1,3 +1,5 @@
+// a very simple clone of atari breakout. 
+
 var gPlayerSpeed = 8;
 var gBallSpeed = 8;
 // x,y,width,hieght
@@ -308,24 +310,25 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     }
 }
 
-Game.prototype.RightButton = function() {
+Game.prototype.RightButtonDown = function() {
     this.PlayerVelocityX = gPlayerSpeed;
-    this.Player.X += gPlayerSpeed;
-    if (this.Player.X + this.Player.Width > this.WorldWidth) {
-        this.Player.X = this.WorldWidth - this.Player.Width;
-    }
     console.log("RightButton Key");
 };
 
-Game.prototype.LeftButton = function() {
+Game.prototype.LeftButtonDown = function() {
     this.PlayerVelocityX = -gPlayerSpeed;
-    this.Player.X -= gPlayerSpeed;
-    if (this.Player.X < 0) {
-        this.Player.X = 0;
-    }
     console.log("LeftButton Key");
 };
 
+Game.prototype.LeftButtonUp = function() {
+    this.PlayerVelocityX = 0;
+    console.log("LeftButton Key");
+};
+
+Game.prototype.RightButtonUp = function() {
+    this.PlayerVelocityX = 0;
+    console.log("LeftButton Key");
+};
 
 Game.prototype.Reset = function() {
     this.BallOldPos = [gInitBallBox[0], gInitBallBox[1] - gBallSpeed];
@@ -498,16 +501,18 @@ Game.prototype.Draw = function() {
         this.BallHit = true;
     }
 
-    this.PlayerVelocityX = 0;
-    this.PlayerVelocityY = 0;
+    this.Player.X += this.PlayerVelocityX;
+    if (this.Player.X + this.Player.Width > this.WorldWidth) {
+        this.Player.X = this.WorldWidth - this.Player.Width;
+    }
+    if (this.Player.X < 0) {
+        this.Player.X = 0;
+    }
+
 
     //render the buffered canvas onto the original canvas element
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
 };
-
-
-
-
 
 function newGame() {
     var gGame = null;
@@ -527,15 +532,26 @@ function newGame() {
         }
     }
 
+    document.addEventListener('keyup', function(event) {
+        if (event.keyCode == 37) {
+            if (gGame !== null) {
+                gGame.LeftButtonUp();
+            }
+        } else if (event.keyCode == 39) {
+            if (gGame !== null) {
+                gGame.RightButtonUp();
+            }
+        }
+    });
 
     document.addEventListener('keydown', function(event) {
         if (event.keyCode == 37) {
             if (gGame !== null) {
-                gGame.LeftButton();
+                gGame.LeftButtonDown();
             }
         } else if (event.keyCode == 39) {
             if (gGame !== null) {
-                gGame.RightButton();
+                gGame.RightButtonDown();
             }
         } else if (event.keyCode == 32) {
             if (gGame !== null) {
