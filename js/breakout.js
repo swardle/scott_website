@@ -6,6 +6,71 @@ var gInitBallBox = [8, 128, 3, 3];
 var gInitPlayerBox = [0, 256 - 4, 64, 4];
 var gInitField0Box = [0, 0, 16, 8];
 
+
+// ResourceCache a cache for loading art for the game.
+function ResourceCache() {
+    this.resourceCache = {};
+    this.loading = [];
+    this.readyCallbacks = [];
+}
+
+// Load an image url or an array of image urls
+ResourceCache.prototype.load = function(urlOrArr) {
+    if (urlOrArr instanceof Array) {
+        urlOrArr.forEach(function(url) {
+            this._load(url);
+        });
+    } else {
+        this._load(urlOrArr);
+    }
+};
+
+ResourceCache.prototype._load = function(url) {
+    if (this.resourceCache[url]) {
+        return this.resourceCache[url];
+    } else {
+        var img = new Image();
+        var _this = this;
+        img.onload = function() {
+            _this.resourceCache[url] = img;
+
+            if (_this.isReady()) {
+                _this.readyCallbacks.forEach(function(func) { func(); });
+            }
+        };
+        this.resourceCache[url] = false;
+        img.src = url;
+    }
+};
+
+ResourceCache.prototype.get = function(url) {
+    return this.resourceCache[url];
+};
+
+ResourceCache.prototype.isReady = function() {
+    var ready = true;
+    for (var k in this.resourceCache) {
+        if (this.resourceCache.hasOwnProperty(k) &&
+            !this.resourceCache[k]) {
+            ready = false;
+        }
+    }
+    return ready;
+};
+
+ResourceCache.prototype.onReady = function(func) {
+    this.readyCallbacks.push(func);
+};
+
+// ResourceCache a cache for loading art for the game.
+var gBox = "img/box.png";
+var gBall = "img/ball.png";
+var gCache = new ResourceCache();
+gCache.load(gBox);
+gCache.load(gBall);
+
+
+
 function Ball() {
     this.X = gInitBallBox[0];
     this.Y = gInitBallBox[1];
@@ -62,8 +127,11 @@ Ball.prototype.BallReflection = function(testBox, objectType, collisionFunction,
 // Draw the ball centered
 Ball.prototype.Draw = function(ctx) {
     // Draw Ball
-    ctx.fillStyle = 'rgb(0, 0, 200)';
-    ctx.fillRect(this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
+    //ctx.fillStyle = 'rgb(0, 0, 200)';
+    //ctx.fillRect(this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
+    img = gCache.get(gBall);
+    ctx.drawImage(img,0,0,img.width,
+        img.height,this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
 };
 
 Ball.prototype.Move = function() {
@@ -318,6 +386,21 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.Player = new BoxFromArray(gInitPlayerBox);
     this.Field0Box = new BoxFromArray(gInitField0Box);
     this.ResetField();
+
+
+    img = gCache.get(gBox);
+
+    this.BoxCanvas = document.createElement("canvas");
+    this.BoxCtx = this.BoxCanvas.getContext('2d');
+
+    this.BoxCanvas.width = gInitField0Box[2];
+    this.BoxCanvas.height = gInitField0Box[3];
+
+    this.BoxCtx.drawImage(img, 0, 0, img.width,img.height, 
+            0,0,gInitField0Box[2], gInitField0Box[3]);
+    this.BoxCtx.globalCompositeOperation = "multiply"; // 'source-atop';
+    this.BoxCtx.fillStyle = 'red';
+    this.BoxCtx.fillRect(0, 0, gInitField0Box[2], gInitField0Box[3]);
 }
 
 Game.prototype.RightButtonDown = function() {
@@ -355,8 +438,7 @@ Game.prototype.ResetField = function() {
     for (var i = 0; i < a.length; i++) {
         var temp = [];
         for (var j = 0; j < a[i].length; j++) {
-            if(a[i][j] === "*")
-            {
+            if (a[i][j] === "*") {
                 temp.push(1);
             }
         }
@@ -372,7 +454,11 @@ Game.prototype.Draw = function() {
 
     // Draw Player 
     ctx.fillStyle = 'rgb(0, 200, 0)';
-    ctx.fillRect(this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
+    // ctx.fillRect(this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
+    img = gCache.get(gBox);
+    ctx.drawImage(img,0,0,img.width, img.height,
+        this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
+
 
     this.Ball.Draw(ctx);
 
@@ -394,7 +480,9 @@ Game.prototype.Draw = function() {
         for (bx = 0; bx < row.length; bx++) {
             if (row[bx] == 1) {
                 var x = this.Field0Box.X + bx * this.Field0Box.Width;
-                ctx.fillRect(x, y, this.Field0Box.Width, this.Field0Box.Height);
+                ctx.drawImage(this.BoxCanvas,0,0,this.BoxCanvas.width, this.BoxCanvas.height,
+                    x, y, this.Field0Box.Width, this.Field0Box.Height);
+
             }
         }
     }
@@ -404,10 +492,10 @@ Game.prototype.Draw = function() {
     // did ball hit field
     var testBox = new Box(0, 0, this.Field0Box.Width, this.Field0Box.Height);
     // loop backward so I hit the first row first. 
-    for (by = this.Field.length - 1; by >= 0 ; by--) {
+    for (by = this.Field.length - 1; by >= 0; by--) {
         row = this.Field[by];
         testBox.Y = this.Field0Box.Y + by * this.Field0Box.Height;
-        for (bx = 0; bx < row.length ; bx++) {
+        for (bx = 0; bx < row.length; bx++) {
             if (row[bx] == 1) {
                 testBox.X = this.Field0Box.X + bx * this.Field0Box.Width;
 
@@ -495,3 +583,6 @@ function newGame() {
         gGame.Draw();
     }
 }
+
+gCache.onReady(newGame);
+
