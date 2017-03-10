@@ -2,7 +2,7 @@
 var gPlayerSpeed = 11;
 var gBallSpeed = 8;
 // x,y,width,hieght
-var gInitBallBox = [8, 128, 3, 3];
+var gInitBallBox = [8, 128, 8, 8];
 var gInitPlayerBox = [0, 256 - 4, 64, 4];
 var gInitField0Box = [0, 0, 16, 8];
 
