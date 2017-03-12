@@ -4,7 +4,7 @@ var gBallSpeed = 8;
 // x,y,width,hieght
 var gInitBallBox = [8, 128, 8, 8];
 var gInitPlayerBox = [0, 256 - 4, 64, 4];
-var gInitField0Box = [0, 0, 16, 8];
+var gInitField0Box = [0, 0, 32, 16];
 
 
 // ResourceCache a cache for loading art for the game.
@@ -64,11 +64,8 @@ ResourceCache.prototype.onReady = function(func) {
 
 // ResourceCache a cache for loading art for the game.
 var gBox = "img/box.png";
-var gBall = "img/ball.png";
 var gCache = new ResourceCache();
 gCache.load(gBox);
-gCache.load(gBall);
-
 
 
 function Ball() {
@@ -129,9 +126,11 @@ Ball.prototype.Draw = function(ctx) {
     // Draw Ball
     //ctx.fillStyle = 'rgb(0, 0, 200)';
     //ctx.fillRect(this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
-    img = gCache.get(gBall);
-    ctx.drawImage(img,0,0,img.width,
-        img.height,this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
+
+    ctx.fillStyle = 'blue';
+    ctx.beginPath();
+    ctx.arc(this.X, this.Y, gInitBallBox[2]/2, 0, 2 * Math.PI);
+    ctx.fill();
 };
 
 Ball.prototype.Move = function() {
@@ -378,8 +377,8 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.FrontCtx = frontctx;
     this.ScreenWidth = canvas.width;
     this.ScreenHeight = canvas.height;
-    this.WorldWidth = 512;
-    this.WorldHight = 256;
+    this.WorldWidth = canvas.width;
+    this.WorldHight = canvas.height;
     this.PlayerVelocityX = 0;
     this.PlayerVelocityY = 0;
     this.WorldBox = new BoxFromArray([0, 0, this.WorldWidth, this.WorldHight]);
@@ -396,11 +395,13 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.BoxCanvas.width = gInitField0Box[2];
     this.BoxCanvas.height = gInitField0Box[3];
 
-    this.BoxCtx.drawImage(img, 0, 0, img.width,img.height, 
-            0,0,gInitField0Box[2], gInitField0Box[3]);
+    this.BoxCtx.drawImage(img, 0, 0, img.width, img.height,
+        0, 0, gInitField0Box[2], gInitField0Box[3]);
     this.BoxCtx.globalCompositeOperation = "multiply"; // 'source-atop';
     this.BoxCtx.fillStyle = 'red';
     this.BoxCtx.fillRect(0, 0, gInitField0Box[2], gInitField0Box[3]);
+
+    this.ScoreElement = document.getElementById("score");
 }
 
 Game.prototype.RightButtonDown = function() {
@@ -421,8 +422,9 @@ Game.prototype.RightButtonUp = function() {
 
 Game.prototype.ResetField = function() {
     this.Ball = new Ball();
+    this.Score = 0;
 
-    var widthInBoxes = 32;
+    var widthInBoxes = this.WorldWidth / gInitField0Box[2];
     var a = [
         "*".repeat(widthInBoxes),
         "*".repeat(widthInBoxes),
@@ -456,7 +458,7 @@ Game.prototype.Draw = function() {
     ctx.fillStyle = 'rgb(0, 200, 0)';
     // ctx.fillRect(this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
     img = gCache.get(gBox);
-    ctx.drawImage(img,0,0,img.width, img.height,
+    ctx.drawImage(img, 0, 0, img.width, img.height,
         this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
 
 
@@ -480,7 +482,7 @@ Game.prototype.Draw = function() {
         for (bx = 0; bx < row.length; bx++) {
             if (row[bx] == 1) {
                 var x = this.Field0Box.X + bx * this.Field0Box.Width;
-                ctx.drawImage(this.BoxCanvas,0,0,this.BoxCanvas.width, this.BoxCanvas.height,
+                ctx.drawImage(this.BoxCanvas, 0, 0, this.BoxCanvas.width, this.BoxCanvas.height,
                     x, y, this.Field0Box.Width, this.Field0Box.Height);
 
             }
@@ -504,10 +506,13 @@ Game.prototype.Draw = function() {
                     // Delete the box we hit. 
                     row[bx] = 0;
                     this.Ball.BallReflection(testBox, "Field", LineVsBox, HitLoc);
+                    this.Score += 1;
                 }
             }
         }
     }
+
+    this.ScoreElement.innerText = "Score: " + this.Score;
 
     // Check to see if the ball is going out of the world
     HitLoc = this.Ball.BallCollision(this.WorldBox, "World", LineVsBoxInside);
@@ -585,4 +590,3 @@ function newGame() {
 }
 
 gCache.onReady(newGame);
-
