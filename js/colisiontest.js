@@ -34,7 +34,7 @@ function VectorLength(a) {
 }
 
 function LineLength(line) {
-    var a = [line.X2 - line.X1,line.Y2 - line.Y1];
+    var a = [line.X2 - line.X1, line.Y2 - line.Y1];
     var len = Math.sqrt(a[0] * a[0] + a[1] * a[1]);
     return len;
 }
@@ -234,6 +234,45 @@ function LineVsBox(a, b) {
 
 var gGame = null;
 
+function GameOnMouseDown(_this, canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    _this.MouseDown = true;
+    _this.MouseX = evt.clientX - rect.left;
+    _this.MouseY = evt.clientY - rect.top;
+
+    var LineX1 = parseInt(document.getElementById('LineX1').value);
+    var LineY1 = parseInt(document.getElementById('LineY1').value);
+    var LineX2 = parseInt(document.getElementById('LineX2').value);
+    var LineY2 = parseInt(document.getElementById('LineY2').value);
+
+    var BoxX = parseInt(document.getElementById('BoxX').value);
+    var BoxY = parseInt(document.getElementById('BoxX').value);
+    var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
+    var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
+
+    var pix = 5;
+    if (Math.abs(_this.MouseX - LineX1) < pix && Math.abs(_this.MouseY - LineY1) < pix) {
+        _this.MouseSelected = "Line1";
+    } else if (Math.abs(_this.MouseX - LineX2) < pix && Math.abs(_this.MouseY - LineY2) < pix) {
+        _this.MouseSelected = "Line2";
+    } else if (Math.abs(_this.MouseX - BoxX) < pix && Math.abs(_this.MouseY - BoxY) < pix) {
+        _this.MouseSelected = "Box";
+    }
+}
+
+function GameOnMouseUp(_this, canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    _this.MouseSelected = "";
+    _this.MouseX = evt.clientX - rect.left;
+    _this.MouseY = evt.clientY - rect.top;
+}
+
+function GameOnMouseMove(_this, canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    _this.MouseX = evt.clientX - rect.left;
+    _this.MouseY = evt.clientY - rect.top;
+}
+
 function Game(canvas, backcanvas, frontctx, backctx) {
     this.Canvas = backcanvas;
     this.FrontCanvas = canvas;
@@ -241,7 +280,27 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.FrontCtx = frontctx;
     this.ScreenWidth = canvas.width;
     this.ScreenHeight = canvas.height;
+
+    this.MouseX = 0;
+    this.MouseY = 0;
+    this.MouseSelected = "";
+
+    var _this = this;
+    this.FrontCanvas.onmousedown = function(evt) 
+    { 
+        GameOnMouseDown(_this, _this.FrontCanvas, evt); 
+    };
+    this.FrontCanvas.onmouseup = function(evt) 
+    { 
+        GameOnMouseUp(_this, _this.FrontCanvas, evt); 
+    };
+    this.FrontCanvas.onmousemove = function(evt) 
+    { 
+        GameOnMouseMove(_this, _this.FrontCanvas, evt); 
+    };
 }
+
+
 
 
 function LineReflection(line, box, HitLoc) {
@@ -254,10 +313,23 @@ function LineReflection(line, box, HitLoc) {
     vnew = ReflectVector(dir, HitLoc.Normal);
 
     // From the colision point move the ball away keeping the same speed.                                                                             
-    var newPos = [colPos[0] + vnew[0] * (speed - justBeforeHit), 
-                  colPos[1] + vnew[1] * (speed - justBeforeHit)];
+    var newPos = [colPos[0] + vnew[0] * (speed - justBeforeHit),
+        colPos[1] + vnew[1] * (speed - justBeforeHit)
+    ];
 
-    return {ColPos:colPos, NewPos:newPos};
+    return { ColPos: colPos, NewPos: newPos };
+}
+
+
+function GetCollsionType() {
+    var buttons = document.getElementsByName('CollisionType');
+    var ret;
+    for (var i = 0; i < buttons.length; i++) {
+        if (buttons[i].checked) {
+            ret = buttons[i].value;
+        }
+    }
+    return ret;
 }
 
 
@@ -279,6 +351,17 @@ Game.prototype.Draw = function() {
     var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
     var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
 
+    if (this.MouseSelected === "Line1") {
+        document.getElementById('LineX1').value = "" + this.MouseX;
+        document.getElementById('LineY1').value = "" + this.MouseY;
+    } else if (this.MouseSelected === "Line2") {
+        document.getElementById('LineX2').value = "" + this.MouseX;
+        document.getElementById('LineY2').value = "" + this.MouseY;
+    } else if (this.MouseSelected === "Box") {
+        document.getElementById('BoxX').value = "" + this.MouseX;
+        document.getElementById('BoxX').value = "" + this.MouseY;
+    }
+
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(BoxX, BoxY, BoxWidth, BoxHieght);
 
@@ -290,23 +373,22 @@ Game.prototype.Draw = function() {
 
     var line = new Line(LineX1, LineY1, LineX2, LineY2);
     var box = new Box(BoxX, BoxY, BoxWidth, BoxHieght);
-    HitLoc = LineVsBox(line, box);
-    speed = LineLength(line);    
-    if(HitLoc.IsHit && HitLoc.Time < speed)
-    {
-        ColData = LineReflection(line,box,HitLoc);
+    var HitLoc;
+    if (GetCollsionType() == "Outside") {
+        HitLoc = LineVsBox(line, box);
+    } else {
+        HitLoc = LineVsBoxInside(line, box);
+    }
+    var speed = LineLength(line);
+    if (HitLoc.IsHit && HitLoc.Time < speed) {
+        ColData = LineReflection(line, box, HitLoc);
         ctx.strokeStyle = 'rgb(200, 200, 0)';
         ctx.beginPath();
         ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
         ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
         ctx.stroke();
     }
-
-
-
-
-
-
+    
     //render the buffered canvas onto the original canvas element
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
 };
