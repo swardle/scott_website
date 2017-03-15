@@ -246,7 +246,7 @@ function GameOnMouseDown(_this, canvas, evt) {
     var LineY2 = parseInt(document.getElementById('LineY2').value);
 
     var BoxX = parseInt(document.getElementById('BoxX').value);
-    var BoxY = parseInt(document.getElementById('BoxX').value);
+    var BoxY = parseInt(document.getElementById('BoxY').value);
     var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
     var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
 
@@ -347,7 +347,7 @@ Game.prototype.Draw = function() {
     var LineY2 = parseInt(document.getElementById('LineY2').value);
 
     var BoxX = parseInt(document.getElementById('BoxX').value);
-    var BoxY = parseInt(document.getElementById('BoxX').value);
+    var BoxY = parseInt(document.getElementById('BoxY').value);
     var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
     var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
 
@@ -359,7 +359,7 @@ Game.prototype.Draw = function() {
         document.getElementById('LineY2').value = "" + this.MouseY;
     } else if (this.MouseSelected === "Box") {
         document.getElementById('BoxX').value = "" + this.MouseX;
-        document.getElementById('BoxX').value = "" + this.MouseY;
+        document.getElementById('BoxY').value = "" + this.MouseY;
     }
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
