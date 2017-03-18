@@ -38,10 +38,11 @@
             </nav>
         </header>
         <div id="wrapper" style="background:#d0d0d0; clear:both; height:500px;">
-                <table>
+                <table id="values_table">
                     <tr>
                         <th>Line Pos</th>
                         <th>Box Pos</th>
+                        <th>Ball Pos</th>
                         <th>Collision Type</th>
                     </tr>
                     <tr>
@@ -50,6 +51,9 @@
                         </td>
                         <td>X
                             <input type="text" id="BoxX" value="30">
+                        </td>
+                        <td>X
+                            <input type="text" id="BallX" value="90">
                         </td>
                         <td>
                             Inside <input type="Radio" name="CollisionType" value="Inside">
@@ -62,6 +66,9 @@
                         <td>Y
                             <input type="text" id="BoxY" value="30">
                         </td>
+                        <td>Y
+                            <input type="text" id="BallY" value="90">
+                        </td>                        
                         <td>
                             Outside <input type="Radio" name="CollisionType" checked="true" value="Outside">
                         </td>                        
@@ -71,14 +78,16 @@
                             <input type="text" id="LineX2" value="52">
                         </td>
                         <td>Width
-                            <input type="text" id="BoxWidth" value="100"> </td>
+                            <input type="text" id="BoxWidth" value="30"> </td>
+                        <td>Radius
+                            <input type="text" id="BallR" value="30"> </td>
                     </tr>
                     <tr>
                         <td>Y2
                             <input type="text" id="LineY2" value="65">
                         </td>
-                        <td>Hieght
-                            <input type="text" id="BoxHieght" value="100">
+                        <td>Height
+                            <input type="text" id="BoxHieght" value="30">
                         </td>
                     </tr>
                     <tr>

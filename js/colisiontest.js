@@ -5,6 +5,12 @@ function Box(x, y, width, height) {
     this.Height = height;
 }
 
+function Ball(x, y, r) {
+    this.X = x;
+    this.Y = y;
+    this.R = r;
+}
+
 function BoxFromArray(boxarray) {
     this.X = boxarray[0];
     this.Y = boxarray[1];
@@ -149,7 +155,105 @@ function LineVsBoxInside(a, b) {
 // Line a vs box b
 // {IsHit=false, Normal=side, Time=t}
 function LineVsBox(a, b) {
-    console.log("Hi there\nHi");
+
+    var rdir = NormalizeLine(a);
+    var dfx = 90000.0;
+    var dfy = 90000.0;
+    if (Math.abs(rdir[0]) > 0.0001) {
+        dfx = 1.0 / rdir[0];
+    }
+    if (Math.abs(rdir[1]) > 0.0001) {
+        dfy = 1.0 / rdir[1];
+    }
+
+    // time to hit left, right, bottom, top
+    var t1 = (b.X - a.X1) * dfx;
+    var t2 = (b.X + b.Width - a.X1) * dfx;
+    var t3 = (b.Y + b.Height - a.Y1) * dfy;
+    var t4 = (b.Y - a.Y1) * dfy;
+
+    var xside = [0, 0];
+    var yside = [0, 0];
+    var side = [0, 0];
+    var tmin;
+    var tmax;
+    var xmin;
+    var ymin;
+    var xmax;
+    var ymax;
+
+    // See if the left closer then the right
+    if (t1 < t2) {
+        xside = [-1, 0]; // left
+        xmin = t1;
+        xmax = t2;
+    } else {
+        xside = [1, 0]; // right
+        xmin = t2;
+        xmax = t1;
+    }
+
+    // See if the bottom closer then the top
+    if (t3 < t4) {
+        yside = [0, 1]; // bottom 
+        ymin = t3;
+        ymax = t4;
+    } else {
+        yside = [0, -1]; // top
+        ymin = t4;
+        ymax = t3;
+    }
+
+    // See if the side hit before top or bottom
+    if (xmin > ymin) {
+        side = xside;
+        tmin = xmin;
+    } else {
+        side = yside;
+        tmin = ymin;
+    }
+
+    // see what was hit last top/bottom vs sides
+    if (xmax < ymax) {
+        tmax = xmax;
+    } else {
+        tmax = ymax;
+    }
+
+    // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
+    if (tmax < 0) {
+        t = tmax;
+        return { IsHit: false, Normal: side, Time: 0.0 };
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax) {
+        t = tmax;
+        return { IsHit: false, Normal: side, Time: 0.0 };
+    }
+
+    t = tmin;
+    return { IsHit: true, Normal: side, Time: t };
+}
+
+
+// Line a vs box b
+// {IsHit=false, Normal=side, Time=t}
+
+// Circle: abs(x-c)^2 = r^2
+// Line: x = o + dl
+// replace x with o + dl 
+// abs(o + dl-c)^2 = r^2
+// (o + dl-c)*(o + dl-c) = r^2
+// o^2 + odl - oc + odl + dl^2 - dlc - oc - dlc - c^2
+// d^2(l*l) + 2*odl - 2*dlc - oc - c^2 + o^2 - oc
+// d^2(l*l) + 2*d((l)*(o - c)) - oc - c^2 + o^2 - oc
+// d^2(l*l) + 2*d((l)*(o - c)) - c^2 - 2*oc + o^2
+// d^2(l*l) + 2*d((l)*(o - c)) + (-1*c^2 +2*oc -1*o^2)
+// d^2(l*l) + 2*d((l)*(o - c)) + (c-o)(c-o)
+
+
+function LineVsBall(a, b) {
 
     var rdir = NormalizeLine(a);
     var dfx = 90000.0;
@@ -250,6 +354,10 @@ function GameOnMouseDown(_this, canvas, evt) {
     var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
     var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
 
+    var BallX = parseInt(document.getElementById('BallX').value);
+    var BallY = parseInt(document.getElementById('BallY').value);
+    var BallR = parseInt(document.getElementById('BallR').value);
+
     var pix = 5;
     if (Math.abs(_this.MouseX - LineX1) < pix && Math.abs(_this.MouseY - LineY1) < pix) {
         _this.MouseSelected = "Line1";
@@ -257,6 +365,8 @@ function GameOnMouseDown(_this, canvas, evt) {
         _this.MouseSelected = "Line2";
     } else if (Math.abs(_this.MouseX - BoxX) < pix && Math.abs(_this.MouseY - BoxY) < pix) {
         _this.MouseSelected = "Box";
+    } else if (Math.abs(_this.MouseX - BallX) < pix && Math.abs(_this.MouseY - BallY) < pix) {
+        _this.MouseSelected = "Ball";
     }
 }
 
@@ -351,6 +461,10 @@ Game.prototype.Draw = function() {
     var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
     var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
 
+    var BallX = parseInt(document.getElementById('BallX').value);
+    var BallY = parseInt(document.getElementById('BallY').value);
+    var BallR = parseInt(document.getElementById('BallR').value);
+
     if (this.MouseSelected === "Line1") {
         document.getElementById('LineX1').value = "" + this.MouseX;
         document.getElementById('LineY1').value = "" + this.MouseY;
@@ -359,8 +473,16 @@ Game.prototype.Draw = function() {
         document.getElementById('LineY2').value = "" + this.MouseY;
     } else if (this.MouseSelected === "Box") {
         document.getElementById('BoxX').value = "" + this.MouseX;
-        document.getElementById('BoxY').value = "" + this.MouseY;
+        document.getElementById('BoxY').value = "" + this.MouseY;    
+    } else if (this.MouseSelected === "Ball") {
+        document.getElementById('BallX').value = "" + this.MouseX;
+        document.getElementById('BallY').value = "" + this.MouseY;
     }
+
+    ctx.strokeStyle = 'rgb(0, 0, 255)';
+    ctx.beginPath();
+    ctx.arc(BallX,BallY,BallR,0,2*Math.PI);
+    ctx.stroke();
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
     ctx.fillRect(BoxX, BoxY, BoxWidth, BoxHieght);
@@ -388,6 +510,10 @@ Game.prototype.Draw = function() {
         ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
         ctx.stroke();
     }
+
+
+    var ball = new Ball(BallX, BallY, BallR);
+
     
     //render the buffered canvas onto the original canvas element
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
