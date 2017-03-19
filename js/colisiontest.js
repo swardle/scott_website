@@ -32,6 +32,19 @@ function LineFromArray(linearray) {
     this.Y2 = linearray[3];
 }
 
+function Ray(x1, y1, x2, y2) {
+    this.Orig = [x1, y1];
+    var a = [x2 - x1, y2 - y1];
+    var len = Math.sqrt(a[0] * a[0] + a[1] * a[1]);
+    var oolen = 1.0 / len;
+    this.Dir = [a[0] * oolen, a[1] * oolen];
+    this.Length = len;
+}
+
+function VectorSub(a, b) {
+    return [a[0] - b[0], a[1] - b[1]];
+}
+
 // return a normal from a line
 function VectorLength(a) {
     // a normal 
@@ -83,8 +96,7 @@ function ReflectVector(d, n) {
 }
 
 
-function LineVsBoxInside(a, b) {
-    var rdir = NormalizeLine(a);
+function RayVsBoxInside(orig, rdir, b) {
     var dfx = 90000.0;
     var dfy = 90000.0;
     if (Math.abs(rdir[0]) > 0.0001) {
@@ -95,10 +107,10 @@ function LineVsBoxInside(a, b) {
     }
 
     // time to hit left, right, bottom, top
-    var t1 = (b.X - a.X1) * dfx;
-    var t2 = (b.X + b.Width - a.X1) * dfx;
-    var t3 = (b.Y + b.Height - a.Y1) * dfy;
-    var t4 = (b.Y - a.Y1) * dfy;
+    var t1 = (b.X - orig[0]) * dfx;
+    var t2 = (b.X + b.Width - orig[0]) * dfx;
+    var t3 = (b.Y + b.Height - orig[1]) * dfy;
+    var t4 = (b.Y - orig[1]) * dfy;
     var xdir = [1, 0];
     var ydir = [0, 1];
     var tdir = [0, 1];
@@ -145,18 +157,20 @@ function LineVsBoxInside(a, b) {
     }
 
     if (tmin < 0) {
-        return { IsHit: false, Normal: tdir, Time: tmin };
+        return [];
     }
 
-    return { IsHit: true, Normal: tdir, Time: tmin };
-
+    var colPos = [orig[0] + rdir[0] * t, orig[1] + rdir[1] * t];
+    var hit = { Position: colPos, Normal: side, Time: t };
+    return [hit];
 }
 
-// Line a vs box b
+// orgin 2d vector x and y of start of ray. 
+// rdir 2d vector x and y of the normalized direction of ray. 
+// b is a box 
 // {IsHit=false, Normal=side, Time=t}
-function LineVsBox(a, b) {
+function RayVsBox(orig, rdir, b) {
 
-    var rdir = NormalizeLine(a);
     var dfx = 90000.0;
     var dfy = 90000.0;
     if (Math.abs(rdir[0]) > 0.0001) {
@@ -167,10 +181,10 @@ function LineVsBox(a, b) {
     }
 
     // time to hit left, right, bottom, top
-    var t1 = (b.X - a.X1) * dfx;
-    var t2 = (b.X + b.Width - a.X1) * dfx;
-    var t3 = (b.Y + b.Height - a.Y1) * dfy;
-    var t4 = (b.Y - a.Y1) * dfy;
+    var t1 = (b.X - orig[0]) * dfx;
+    var t2 = (b.X + b.Width - orig[0]) * dfx;
+    var t3 = (b.Y + b.Height - orig[1]) * dfy;
+    var t4 = (b.Y - orig[1]) * dfy;
 
     var xside = [0, 0];
     var yside = [0, 0];
@@ -223,19 +237,45 @@ function LineVsBox(a, b) {
     // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
     if (tmax < 0) {
         t = tmax;
-        return { IsHit: false, Normal: side, Time: 0.0 };
+        return [];
     }
 
     // if tmin > tmax, ray doesn't intersect AABB
     if (tmin > tmax) {
         t = tmax;
-        return { IsHit: false, Normal: side, Time: 0.0 };
+        return [];
     }
 
     t = tmin;
-    return { IsHit: true, Normal: side, Time: t };
+
+    var colPos = [orig[0] + rdir[0] * t, orig[1] + rdir[1] * t];
+    var hit = { Position: colPos, Normal: side, Time: t };
+    return [hit];
 }
 
+
+function solveQuadratic(a, b, c) {
+    var x0;
+    var x1;
+    var discr = b * b - 4 * a * c;
+    if (discr < 0) {
+        return [];
+    } else if (discr === 0) {
+        return [-0.5 * b / a];
+    } else {
+        var q = (b > 0) ?
+            -0.5 * (b + Math.sqrt(discr)) :
+            -0.5 * (b - Math.sqrt(discr));
+        x0 = q / a;
+        x1 = c / q;
+    }
+    if (x0 > x1) {
+        var tmp = x1;
+        x0 = x1;
+        x1 = tmp;
+    }
+    return [x0, x1];
+}
 
 // Line a vs box b
 // {IsHit=false, Normal=side, Time=t}
@@ -245,94 +285,55 @@ function LineVsBox(a, b) {
 // replace x with o + dl 
 // abs(o + dl-c)^2 = r^2
 // (o + dl-c)*(o + dl-c) = r^2
-// o^2 + odl - oc + odl + dl^2 - dlc - oc - dlc - c^2
-// d^2(l*l) + 2*odl - 2*dlc - oc - c^2 + o^2 - oc
-// d^2(l*l) + 2*d((l)*(o - c)) - oc - c^2 + o^2 - oc
-// d^2(l*l) + 2*d((l)*(o - c)) - c^2 - 2*oc + o^2
-// d^2(l*l) + 2*d((l)*(o - c)) + (-1*c^2 +2*oc -1*o^2)
-// d^2(l*l) + 2*d((l)*(o - c)) + (c-o)(c-o)
+// o^2 + odl - oc + odl + dl^2 - dlc - oc - dlc + c^2 = r^2
+// d^2(l*l) + 2*odl - 2*dlc - oc + c^2 + o^2 - oc = r^2
+// d^2(l*l) + 2*d((l)*(o - c)) + c^2 - oc + o^2 - oc = r^2
+// d^2(l*l) + 2*d((l)*(o - c)) + c(c - o) - o(c - o) = r^2
+// d^2(l*l) + 2*d((l)*(o - c)) + (c-o)(c-o) = r^2
+// d^2(l*l) + 2*d((l)*(o - c)) + (c-o)(c-o) = r^2
+// d^2(l*l) + 2*d((l)*(o - c)) + (c-o)(c-o) - r^2 = 0
+// Solve for d using Quadratic formula
+// 
+// x = -b +- sqrt(b^2 - 4ac)
+//     ---------------------
+//             2a  
+// Where d will be x
+// a = (l*l)
+// b = ((l)*(o - c))
+// c = ((c-o)(c-o)-r^2)
+// 
+// x = -((l)*(o - c)) +- sqrt(((l)*(o - c))^2 - 4(l*l)((c-o)(c-o)-r^2)
+//       -------------------------------------------------------
+//                 2(l*l)
+//
 
+// orig of ray
+// dir of ray
+// center of sphere
+// radius of sphere
+function RayVsBall(orig, dir, center, radius) {
 
-function LineVsBall(a, b) {
+    var L = VectorSub(orig, center);
+    var a = Dot(dir, dir);
+    var b = 2 * Dot(dir, L);
+    var c = Dot(L, L) - radius * radius;
+    var solutions = solveQuadratic(a, b, c);
 
-    var rdir = NormalizeLine(a);
-    var dfx = 90000.0;
-    var dfy = 90000.0;
-    if (Math.abs(rdir[0]) > 0.0001) {
-        dfx = 1.0 / rdir[0];
-    }
-    if (Math.abs(rdir[1]) > 0.0001) {
-        dfy = 1.0 / rdir[1];
-    }
+    var hits = [];
 
-    // time to hit left, right, bottom, top
-    var t1 = (b.X - a.X1) * dfx;
-    var t2 = (b.X + b.Width - a.X1) * dfx;
-    var t3 = (b.Y + b.Height - a.Y1) * dfy;
-    var t4 = (b.Y - a.Y1) * dfy;
-
-    var xside = [0, 0];
-    var yside = [0, 0];
-    var side = [0, 0];
-    var tmin;
-    var tmax;
-    var xmin;
-    var ymin;
-    var xmax;
-    var ymax;
-
-    // See if the left closer then the right
-    if (t1 < t2) {
-        xside = [-1, 0]; // left
-        xmin = t1;
-        xmax = t2;
-    } else {
-        xside = [1, 0]; // right
-        xmin = t2;
-        xmax = t1;
-    }
-
-    // See if the bottom closer then the top
-    if (t3 < t4) {
-        yside = [0, 1]; // bottom 
-        ymin = t3;
-        ymax = t4;
-    } else {
-        yside = [0, -1]; // top
-        ymin = t4;
-        ymax = t3;
+    for (var i = 0; i < solutions.length; i++) {        
+        var s = solutions[i];
+        if(s > 0)
+        {
+            var colPos = [orig[0] + dir[0] * s, orig[1] + dir[1] * s];
+            var n = VectorSub(colPos, center);
+            n = Normalize(n);
+            var hit = { Position: colPos, Normal: n, Time: s };
+            hits.push(hit);            
+        }
     }
 
-    // See if the side hit before top or bottom
-    if (xmin > ymin) {
-        side = xside;
-        tmin = xmin;
-    } else {
-        side = yside;
-        tmin = ymin;
-    }
-
-    // see what was hit last top/bottom vs sides
-    if (xmax < ymax) {
-        tmax = xmax;
-    } else {
-        tmax = ymax;
-    }
-
-    // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
-    if (tmax < 0) {
-        t = tmax;
-        return { IsHit: false, Normal: side, Time: 0.0 };
-    }
-
-    // if tmin > tmax, ray doesn't intersect AABB
-    if (tmin > tmax) {
-        t = tmax;
-        return { IsHit: false, Normal: side, Time: 0.0 };
-    }
-
-    t = tmin;
-    return { IsHit: true, Normal: side, Time: t };
+    return hits;
 }
 
 
@@ -396,36 +397,33 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.MouseSelected = "";
 
     var _this = this;
-    this.FrontCanvas.onmousedown = function(evt) 
-    { 
-        GameOnMouseDown(_this, _this.FrontCanvas, evt); 
+    this.FrontCanvas.onmousedown = function(evt) {
+        GameOnMouseDown(_this, _this.FrontCanvas, evt);
     };
-    this.FrontCanvas.onmouseup = function(evt) 
-    { 
-        GameOnMouseUp(_this, _this.FrontCanvas, evt); 
+    this.FrontCanvas.onmouseup = function(evt) {
+        GameOnMouseUp(_this, _this.FrontCanvas, evt);
     };
-    this.FrontCanvas.onmousemove = function(evt) 
-    { 
-        GameOnMouseMove(_this, _this.FrontCanvas, evt); 
+    this.FrontCanvas.onmousemove = function(evt) {
+        GameOnMouseMove(_this, _this.FrontCanvas, evt);
     };
 }
 
 
 
 
-function LineReflection(line, box, HitLoc) {
+function LineReflection(ray, HitLoc) {
     // Find where the ball colision happened.                                                                             
-    dir = NormalizeLine(line);
-    speed = LineLength(line);
-    justBeforeHit = HitLoc.Time - 1;
-    colPos = [line.X1 + dir[0] * justBeforeHit, line.Y1 + dir[1] * justBeforeHit];
+    dir = ray.Dir;
+    speed = ray.Length;
+    var colPos = HitLoc.Position;
     // Calulate the reflected vector so we have the new direction.                       
     vnew = ReflectVector(dir, HitLoc.Normal);
 
     // From the colision point move the ball away keeping the same speed.                                                                             
-    var newPos = [colPos[0] + vnew[0] * (speed - justBeforeHit),
-        colPos[1] + vnew[1] * (speed - justBeforeHit)
+    var newPos = [colPos[0] + vnew[0] * (speed - HitLoc.Time),
+        colPos[1] + vnew[1] * (speed - HitLoc.Time)
     ];
+
 
     return { ColPos: colPos, NewPos: newPos };
 }
@@ -473,7 +471,7 @@ Game.prototype.Draw = function() {
         document.getElementById('LineY2').value = "" + this.MouseY;
     } else if (this.MouseSelected === "Box") {
         document.getElementById('BoxX').value = "" + this.MouseX;
-        document.getElementById('BoxY').value = "" + this.MouseY;    
+        document.getElementById('BoxY').value = "" + this.MouseY;
     } else if (this.MouseSelected === "Ball") {
         document.getElementById('BallX').value = "" + this.MouseX;
         document.getElementById('BallY').value = "" + this.MouseY;
@@ -481,7 +479,7 @@ Game.prototype.Draw = function() {
 
     ctx.strokeStyle = 'rgb(0, 0, 255)';
     ctx.beginPath();
-    ctx.arc(BallX,BallY,BallR,0,2*Math.PI);
+    ctx.arc(BallX, BallY, BallR, 0, 2 * Math.PI);
     ctx.stroke();
 
     ctx.fillStyle = 'rgb(0, 0, 0)';
@@ -493,28 +491,46 @@ Game.prototype.Draw = function() {
     ctx.lineTo(LineX2, LineY2);
     ctx.stroke();
 
-    var line = new Line(LineX1, LineY1, LineX2, LineY2);
+    var ray = new Ray(LineX1, LineY1, LineX2, LineY2);
     var box = new Box(BoxX, BoxY, BoxWidth, BoxHieght);
+    var hits;
     var HitLoc;
     if (GetCollsionType() == "Outside") {
-        HitLoc = LineVsBox(line, box);
+        hits = RayVsBox(ray.Orig, ray.Dir, box);
     } else {
-        HitLoc = LineVsBoxInside(line, box);
+        hits = RayVsBoxInside(ray.Orig, ray.Dir, box);
     }
-    var speed = LineLength(line);
-    if (HitLoc.IsHit && HitLoc.Time < speed) {
-        ColData = LineReflection(line, box, HitLoc);
-        ctx.strokeStyle = 'rgb(200, 200, 0)';
-        ctx.beginPath();
-        ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
-        ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
-        ctx.stroke();
+
+    var i = 0;
+    var speed = ray.Length;
+    for (i = 0; i < hits.length; i++) {
+        HitLoc = hits[i];
+        if (HitLoc.Time < speed) {
+            ColData = LineReflection(ray, HitLoc);
+            ctx.strokeStyle = 'rgb(200, 200, 0)';
+            ctx.beginPath();
+            ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
+            ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
+            ctx.stroke();
+        }
     }
 
 
     var ball = new Ball(BallX, BallY, BallR);
+    hits = RayVsBall(ray.Orig, ray.Dir, [BallX, BallY], BallR);
+    for (i = 0; i < hits.length; i++) {
+        HitLoc = hits[i];
+        if (HitLoc.Time < speed) {
+            ColData = LineReflection(ray, HitLoc);
+            ctx.strokeStyle = 'rgb(200, 200, 0)';
+            ctx.beginPath();
+            ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
+            ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
+            ctx.stroke();
+        }
+    }
 
-    
+
     //render the buffered canvas onto the original canvas element
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
 };
@@ -526,7 +542,6 @@ function updateFrame() {
 
 
 function newGame() {
-    console.log("myNewAnim");
     var canvas = document.getElementById('canvas');
     if (canvas.getContext) {
         var backcanvas = document.createElement('canvas');
