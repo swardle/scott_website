@@ -270,7 +270,7 @@ function solveQuadratic(a, b, c) {
         x1 = c / q;
     }
     if (x0 > x1) {
-        var tmp = x1;
+        var tmp = x0;
         x0 = x1;
         x1 = tmp;
     }
