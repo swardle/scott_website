@@ -97,14 +97,8 @@ function ReflectVector(d, n) {
 
 
 function RayVsBoxInside(orig, rdir, b) {
-    var dfx = 90000.0;
-    var dfy = 90000.0;
-    if (Math.abs(rdir[0]) > 0.0001) {
-        dfx = 1.0 / rdir[0];
-    }
-    if (Math.abs(rdir[1]) > 0.0001) {
-        dfy = 1.0 / rdir[1];
-    }
+    dfx = 1.0 / rdir[0];
+    dfy = 1.0 / rdir[1];
 
     // time to hit left, right, bottom, top
     var t1 = (b.X - orig[0]) * dfx;
@@ -160,8 +154,8 @@ function RayVsBoxInside(orig, rdir, b) {
         return [];
     }
 
-    var colPos = [orig[0] + rdir[0] * t, orig[1] + rdir[1] * t];
-    var hit = { Position: colPos, Normal: side, Time: t };
+    var colPos = [orig[0] + rdir[0] * tmin, orig[1] + rdir[1] * tmin];
+    var hit = { Position: colPos, Normal: tdir, Time: tmin };
     return [hit];
 }
 
@@ -171,14 +165,8 @@ function RayVsBoxInside(orig, rdir, b) {
 // {IsHit=false, Normal=side, Time=t}
 function RayVsBox(orig, rdir, b) {
 
-    var dfx = 90000.0;
-    var dfy = 90000.0;
-    if (Math.abs(rdir[0]) > 0.0001) {
-        dfx = 1.0 / rdir[0];
-    }
-    if (Math.abs(rdir[1]) > 0.0001) {
-        dfy = 1.0 / rdir[1];
-    }
+    var dfx = 1.0 / rdir[0];
+    var dfy = 1.0 / rdir[1];
 
     // time to hit left, right, bottom, top
     var t1 = (b.X - orig[0]) * dfx;
