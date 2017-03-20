@@ -11,20 +11,6 @@ function Ball(x, y, r) {
     this.R = r;
 }
 
-function BoxFromArray(boxarray) {
-    this.X = boxarray[0];
-    this.Y = boxarray[1];
-    this.Width = boxarray[2];
-    this.Height = boxarray[3];
-}
-
-function Line(x1, y1, x2, y2) {
-    this.X1 = x1;
-    this.Y1 = y1;
-    this.X2 = x2;
-    this.Y2 = y2;
-}
-
 function LineFromArray(linearray) {
     this.X1 = linearray[0];
     this.Y1 = linearray[1];
@@ -96,6 +82,10 @@ function ReflectVector(d, n) {
 }
 
 
+// orgin 2d vector x and y of start of ray. 
+// rdir 2d vector x and y of the normalized direction of ray. 
+// b is a box 
+// {IsHit=false, Normal=side, Time=t}
 function RayVsBoxInside(orig, rdir, b) {
     dfx = 1.0 / rdir[0];
     dfy = 1.0 / rdir[1];
@@ -241,16 +231,21 @@ function RayVsBoxOutsize(orig, rdir, b) {
     return [hit];
 }
 
-
+// orgin 2d vector x and y of start of ray. 
+// rdir 2d vector x and y of the normalized direction of ray. 
+// b is a box 
+// {IsHit=false, Normal=side, Time=t}
 function RayVsBox(orig, rdir, b) {
-    if (b.X <= orig[0] && orig[0] <= b.X+b.Width && b.Y <= orig[1] && orig[1] <= b.Y+b.Height) {
+    if (b.X <= orig[0] && orig[0] <= b.X + b.Width &&
+        b.Y <= orig[1] && orig[1] <= b.Y + b.Height) {
         return RayVsBoxInside(orig, rdir, b);
     }
     return RayVsBoxOutsize(orig, rdir, b);
 }
 
-
-
+// x = -b +- sqrt(b^2 - 4ac)
+//     ---------------------
+//             2a  
 function solveQuadratic(a, b, c) {
     var x0;
     var x1;
@@ -318,15 +313,14 @@ function RayVsBall(orig, dir, center, radius) {
 
     var hits = [];
 
-    for (var i = 0; i < solutions.length; i++) {        
+    for (var i = 0; i < solutions.length; i++) {
         var s = solutions[i];
-        if(s > 0)
-        {
+        if (s > 0) {
             var colPos = [orig[0] + dir[0] * s, orig[1] + dir[1] * s];
             var n = VectorSub(colPos, center);
             n = Normalize(n);
             var hit = { Position: colPos, Normal: n, Time: s };
-            hits.push(hit);            
+            hits.push(hit);
         }
     }
 
@@ -341,36 +335,30 @@ function GameOnMouseDown(_this, canvas, evt) {
     _this.MouseDown = true;
     _this.MouseX = evt.clientX - rect.left;
     _this.MouseY = evt.clientY - rect.top;
+    _this.MouseSelected = null;
+    _this.MouseSelectedObjIndex = 0;
+    _this.MouseSelectedVertIndex = 0;
 
-    var LineX1 = parseInt(document.getElementById('LineX1').value);
-    var LineY1 = parseInt(document.getElementById('LineY1').value);
-    var LineX2 = parseInt(document.getElementById('LineX2').value);
-    var LineY2 = parseInt(document.getElementById('LineY2').value);
+    for (var i = 0; i < _this.Objects.length; i++) {
+        var obj = _this.Objects[i];
+        var pix = 5;
 
-    var BoxX = parseInt(document.getElementById('BoxX').value);
-    var BoxY = parseInt(document.getElementById('BoxY').value);
-    var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
-    var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
-
-    var BallX = parseInt(document.getElementById('BallX').value);
-    var BallY = parseInt(document.getElementById('BallY').value);
-    var BallR = parseInt(document.getElementById('BallR').value);
-
-    var pix = 5;
-    if (Math.abs(_this.MouseX - LineX1) < pix && Math.abs(_this.MouseY - LineY1) < pix) {
-        _this.MouseSelected = "Line1";
-    } else if (Math.abs(_this.MouseX - LineX2) < pix && Math.abs(_this.MouseY - LineY2) < pix) {
-        _this.MouseSelected = "Line2";
-    } else if (Math.abs(_this.MouseX - BoxX) < pix && Math.abs(_this.MouseY - BoxY) < pix) {
-        _this.MouseSelected = "Box";
-    } else if (Math.abs(_this.MouseX - BallX) < pix && Math.abs(_this.MouseY - BallY) < pix) {
-        _this.MouseSelected = "Ball";
+        for (var j = 0; j < obj.verts.length; j++) {
+            if (Math.abs(_this.MouseX - obj.verts[j][0]) < pix &&
+                Math.abs(_this.MouseY - obj.verts[j][1]) < pix) {
+                _this.MouseSelected = obj;
+                _this.MouseSelectedObjIndex = i;
+                _this.MouseSelectedVertIndex = j;
+            }
+        }
     }
 }
 
 function GameOnMouseUp(_this, canvas, evt) {
     var rect = canvas.getBoundingClientRect();
-    _this.MouseSelected = "";
+    _this.MouseSelected = null;
+    _this.MouseSelectedObjIndex = 0;
+    _this.MouseSelectedVertIndex = 0;
     _this.MouseX = evt.clientX - rect.left;
     _this.MouseY = evt.clientY - rect.top;
 }
@@ -391,7 +379,10 @@ function Game(canvas, backcanvas, frontctx, backctx) {
 
     this.MouseX = 0;
     this.MouseY = 0;
-    this.MouseSelected = "";
+    this.MouseSelected = null;
+    this.MouseSelectedObjIndex = 0;
+    this.MouseSelectedVertIndex = 0;    
+    this.Objects = [];
 
     var _this = this;
     this.FrontCanvas.onmousedown = function(evt) {
@@ -405,8 +396,51 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     };
 }
 
+function AddRay() {
+    var x1 = parseInt(document.getElementById('LineX1').value);
+    var y1 = parseInt(document.getElementById('LineY1').value);
+    var x2 = parseInt(document.getElementById('LineX2').value);
+    var y2 = parseInt(document.getElementById('LineY2').value);
+    gGame.Objects.push({
+        objtype: "Ray",
+        verts: [
+            [x1, y1],
+            [x2, y2]
+        ]
+    });
+}
 
+function AddBox() {
 
+    var x = parseInt(document.getElementById('BoxX').value);
+    var y = parseInt(document.getElementById('BoxY').value);
+    var w = parseInt(document.getElementById('BoxWidth').value);
+    var h = parseInt(document.getElementById('BoxHieght').value);
+
+    gGame.Objects.push({
+        objtype: "Box",
+        verts: [
+            [x, y],
+        ],
+        width: w,
+        height: h
+    });
+}
+
+function AddBall() {
+
+    var x = parseInt(document.getElementById('BallX').value);
+    var y = parseInt(document.getElementById('BallY').value);
+    var r = parseInt(document.getElementById('BallR').value);
+
+    gGame.Objects.push({
+        objtype: "Ball",
+        verts: [
+            [x, y],
+        ],
+        radius: r,
+    });
+}
 
 function LineReflection(ray, HitLoc) {
     // Find where the ball colision happened.                                                                             
@@ -421,9 +455,60 @@ function LineReflection(ray, HitLoc) {
         colPos[1] + vnew[1] * (speed - HitLoc.Time)
     ];
 
-
     return { ColPos: colPos, NewPos: newPos };
 }
+
+Game.prototype.DrawRay = function(rayobj)
+{    
+    var ctx = this.Ctx;    
+    var i=0;
+    var ray = new Ray(rayobj.verts[0][0], rayobj.verts[0][1], rayobj.verts[1][0], rayobj.verts[1][1]);
+
+    ctx.strokeStyle = 'rgb(255, 0, 0)';
+    ctx.beginPath();
+    ctx.moveTo(rayobj.verts[0][0], rayobj.verts[0][1]);
+    ctx.lineTo(rayobj.verts[1][0], rayobj.verts[1][1]);
+    ctx.stroke();
+
+    for (var j = 0; j < this.Objects.length; j++) {
+        var obj = this.Objects[j];
+        if(obj.objtype == "Ball"){
+            hits = RayVsBall(ray.Orig, ray.Dir, [obj.verts[0][0], obj.verts[0][1]], obj.radius);
+            for (i = 0; i < hits.length; i++) {
+                HitLoc = hits[i];
+                if (HitLoc.Time < speed) {
+                    ColData = LineReflection(ray, HitLoc);
+                    ctx.strokeStyle = 'rgb(200, 200, 0)';
+                    ctx.beginPath();
+                    ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
+                    ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
+                    ctx.stroke();
+                }
+            }
+        }
+        else if(obj.objtype == "Box")
+        {
+            var box = new Box(obj.verts[0][0], obj.verts[0][1], obj.width, obj.height);
+            var hits;
+            var HitLoc;
+            hits = RayVsBox(ray.Orig, ray.Dir, box);
+
+            var speed = ray.Length;
+            for (i = 0; i < hits.length; i++) {
+                HitLoc = hits[i];
+                if (HitLoc.Time < speed) {
+                    ColData = LineReflection(ray, HitLoc);
+                    ctx.strokeStyle = 'rgb(200, 200, 0)';
+                    ctx.beginPath();
+                    ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
+                    ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
+                    ctx.stroke();
+                }
+            }
+
+        }
+    }    
+};
 
 Game.prototype.Draw = function() {
     var ctx = this.Ctx;
@@ -432,83 +517,29 @@ Game.prototype.Draw = function() {
     ctx.fillStyle = 'rgb(100, 100, 100)';
     ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-    var LineX1 = parseInt(document.getElementById('LineX1').value);
-    var LineY1 = parseInt(document.getElementById('LineY1').value);
-    var LineX2 = parseInt(document.getElementById('LineX2').value);
-    var LineY2 = parseInt(document.getElementById('LineY2').value);
-
-    var BoxX = parseInt(document.getElementById('BoxX').value);
-    var BoxY = parseInt(document.getElementById('BoxY').value);
-    var BoxWidth = parseInt(document.getElementById('BoxWidth').value);
-    var BoxHieght = parseInt(document.getElementById('BoxHieght').value);
-
-    var BallX = parseInt(document.getElementById('BallX').value);
-    var BallY = parseInt(document.getElementById('BallY').value);
-    var BallR = parseInt(document.getElementById('BallR').value);
-
-    if (this.MouseSelected === "Line1") {
-        document.getElementById('LineX1').value = "" + this.MouseX;
-        document.getElementById('LineY1').value = "" + this.MouseY;
-    } else if (this.MouseSelected === "Line2") {
-        document.getElementById('LineX2').value = "" + this.MouseX;
-        document.getElementById('LineY2').value = "" + this.MouseY;
-    } else if (this.MouseSelected === "Box") {
-        document.getElementById('BoxX').value = "" + this.MouseX;
-        document.getElementById('BoxY').value = "" + this.MouseY;
-    } else if (this.MouseSelected === "Ball") {
-        document.getElementById('BallX').value = "" + this.MouseX;
-        document.getElementById('BallY').value = "" + this.MouseY;
+    if(this.MouseSelected)
+    {
+        var vert = this.MouseSelected.verts[this.MouseSelectedVertIndex];
+        vert[0] = this.MouseX;
+        vert[1] = this.MouseY;
     }
 
-    ctx.strokeStyle = 'rgb(0, 0, 255)';
-    ctx.beginPath();
-    ctx.arc(BallX, BallY, BallR, 0, 2 * Math.PI);
-    ctx.stroke();
-
-    ctx.fillStyle = 'rgb(0, 0, 0)';
-    ctx.fillRect(BoxX, BoxY, BoxWidth, BoxHieght);
-
-    ctx.strokeStyle = 'rgb(255, 0, 0)';
-    ctx.beginPath();
-    ctx.moveTo(LineX1, LineY1);
-    ctx.lineTo(LineX2, LineY2);
-    ctx.stroke();
-
-    var ray = new Ray(LineX1, LineY1, LineX2, LineY2);
-    var box = new Box(BoxX, BoxY, BoxWidth, BoxHieght);
-    var hits;
-    var HitLoc;
-    hits = RayVsBox(ray.Orig, ray.Dir, box);
-
-    var i = 0;
-    var speed = ray.Length;
-    for (i = 0; i < hits.length; i++) {
-        HitLoc = hits[i];
-        if (HitLoc.Time < speed) {
-            ColData = LineReflection(ray, HitLoc);
-            ctx.strokeStyle = 'rgb(200, 200, 0)';
+    for (var i = 0; i < this.Objects.length; i++) {
+        var obj = this.Objects[i];
+        if(obj.objtype == "Ray"){
+            this.DrawRay(obj);
+        }
+        else if(obj.objtype == "Box"){
+            ctx.fillStyle = 'rgb(0, 0, 0)';
+            ctx.fillRect(obj.verts[0][0], obj.verts[0][1], obj.width, obj.height);
+        }
+        else if(obj.objtype == "Ball"){
+            ctx.strokeStyle = 'rgb(0, 0, 255)';
             ctx.beginPath();
-            ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
-            ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
+            ctx.arc(obj.verts[0][0], obj.verts[0][1], obj.radius, 0, 2 * Math.PI);
             ctx.stroke();
         }
     }
-
-
-    var ball = new Ball(BallX, BallY, BallR);
-    hits = RayVsBall(ray.Orig, ray.Dir, [BallX, BallY], BallR);
-    for (i = 0; i < hits.length; i++) {
-        HitLoc = hits[i];
-        if (HitLoc.Time < speed) {
-            ColData = LineReflection(ray, HitLoc);
-            ctx.strokeStyle = 'rgb(200, 200, 0)';
-            ctx.beginPath();
-            ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
-            ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
-            ctx.stroke();
-        }
-    }
-
 
     //render the buffered canvas onto the original canvas element
     this.FrontCtx.drawImage(this.Canvas, 0, 0);
