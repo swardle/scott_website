@@ -163,7 +163,7 @@ function RayVsBoxInside(orig, rdir, b) {
 // rdir 2d vector x and y of the normalized direction of ray. 
 // b is a box 
 // {IsHit=false, Normal=side, Time=t}
-function RayVsBox(orig, rdir, b) {
+function RayVsBoxOutsize(orig, rdir, b) {
 
     var dfx = 1.0 / rdir[0];
     var dfy = 1.0 / rdir[1];
@@ -240,6 +240,15 @@ function RayVsBox(orig, rdir, b) {
     var hit = { Position: colPos, Normal: side, Time: t };
     return [hit];
 }
+
+
+function RayVsBox(orig, rdir, b) {
+    if (b.X <= orig[0] && orig[0] <= b.X+b.Width && b.Y <= orig[1] && orig[1] <= b.Y+b.Height) {
+        return RayVsBoxInside(orig, rdir, b);
+    }
+    return RayVsBoxOutsize(orig, rdir, b);
+}
+
 
 
 function solveQuadratic(a, b, c) {
@@ -416,20 +425,6 @@ function LineReflection(ray, HitLoc) {
     return { ColPos: colPos, NewPos: newPos };
 }
 
-
-function GetCollsionType() {
-    var buttons = document.getElementsByName('CollisionType');
-    var ret;
-    for (var i = 0; i < buttons.length; i++) {
-        if (buttons[i].checked) {
-            ret = buttons[i].value;
-        }
-    }
-    return ret;
-}
-
-
-
 Game.prototype.Draw = function() {
     var ctx = this.Ctx;
 
@@ -483,11 +478,7 @@ Game.prototype.Draw = function() {
     var box = new Box(BoxX, BoxY, BoxWidth, BoxHieght);
     var hits;
     var HitLoc;
-    if (GetCollsionType() == "Outside") {
-        hits = RayVsBox(ray.Orig, ray.Dir, box);
-    } else {
-        hits = RayVsBoxInside(ray.Orig, ray.Dir, box);
-    }
+    hits = RayVsBox(ray.Orig, ray.Dir, box);
 
     var i = 0;
     var speed = ray.Length;

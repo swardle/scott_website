@@ -38,63 +38,54 @@
             </nav>
         </header>
         <div id="wrapper" style="background:#d0d0d0; clear:both; height:500px;">
-                <table id="values_table">
-                    <tr>
-                        <th>Ray Pos</th>
-                        <th>Box Pos</th>
-                        <th>Ball Pos</th>
-                        <th>Collision Type</th>
-                    </tr>
-                    <tr>
-                        <td>X1
-                            <input type="text" id="LineX1" value="9">
-                        </td>
-                        <td>X
-                            <input type="text" id="BoxX" value="30">
-                        </td>
-                        <td>X
-                            <input type="text" id="BallX" value="90">
-                        </td>
-                        <td>
-                            Inside <input type="Radio" name="CollisionType" value="Inside">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Y1
-                            <input type="text" id="LineY1" value="30">
-                        </td>
-                        <td>Y
-                            <input type="text" id="BoxY" value="30">
-                        </td>
-                        <td>Y
-                            <input type="text" id="BallY" value="90">
-                        </td>                        
-                        <td>
-                            Outside <input type="Radio" name="CollisionType" checked="true" value="Outside">
-                        </td>                        
-                    </tr>
-                    <tr>
-                        <td>X2
-                            <input type="text" id="LineX2" value="52">
-                        </td>
-                        <td>Width
-                            <input type="text" id="BoxWidth" value="30"> </td>
-                        <td>Radius
-                            <input type="text" id="BallR" value="30"> </td>
-                    </tr>
-                    <tr>
-                        <td>Y2
-                            <input type="text" id="LineY2" value="65">
-                        </td>
-                        <td>Height
-                            <input type="text" id="BoxHieght" value="30">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Drag left mouse button to move line or box
-                        </td>
-                    </tr>                    
-                </table>
+            <table id="values_table">
+                <tr>
+                    <th>Ray Pos</th>
+                    <td>X1
+                        <input type="text" id="LineX1" value="9">
+                    </td>
+                    <td>Y1
+                        <input type="text" id="LineY1" value="30">
+                    </td>
+                    <td>X2
+                        <input type="text" id="LineX2" value="52">
+                    </td>
+                    <td>Y2
+                        <input type="text" id="LineY2" value="65">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Box Pos</th>
+                    <td>X
+                        <input type="text" id="BoxX" value="30">
+                    </td>
+                    <td>Y
+                        <input type="text" id="BoxY" value="30">
+                    </td>
+                    <td>Width
+                        <input type="text" id="BoxWidth" value="30">
+                    </td>
+                    <td>Height
+                        <input type="text" id="BoxHieght" value="30">
+                    </td>
+                </tr>
+                <tr>
+                    <th>Ball Pos</th>
+                    <td>X
+                        <input type="text" id="BallX" value="90">
+                    </td>
+                    <td>Y
+                        <input type="text" id="BallY" value="90">
+                    </td>
+                    <td>Radius
+                        <input type="text" id="BallR" value="30">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Drag left mouse button to move line or box
+                    </td>
+                </tr>
+            </table>
             <canvas id="canvas" width="256" height="256" style="background: rgb(153, 153, 255);">
             </canvas>
         </div>
