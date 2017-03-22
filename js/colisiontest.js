@@ -463,6 +463,9 @@ Game.prototype.DrawRay = function(rayobj)
     var ctx = this.Ctx;    
     var i=0;
     var ray = new Ray(rayobj.verts[0][0], rayobj.verts[0][1], rayobj.verts[1][0], rayobj.verts[1][1]);
+    var speed = ray.Length;
+    var hits;
+    var HitLoc;
 
     ctx.strokeStyle = 'rgb(255, 0, 0)';
     ctx.beginPath();
@@ -489,11 +492,7 @@ Game.prototype.DrawRay = function(rayobj)
         else if(obj.objtype == "Box")
         {
             var box = new Box(obj.verts[0][0], obj.verts[0][1], obj.width, obj.height);
-            var hits;
-            var HitLoc;
             hits = RayVsBox(ray.Orig, ray.Dir, box);
-
-            var speed = ray.Length;
             for (i = 0; i < hits.length; i++) {
                 HitLoc = hits[i];
                 if (HitLoc.Time < speed) {
