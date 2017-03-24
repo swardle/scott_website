@@ -1,23 +1,3 @@
-function Box(x, y, width, height) {
-    this.X = x;
-    this.Y = y;
-    this.Width = width;
-    this.Height = height;
-}
-
-function Ball(x, y, r) {
-    this.X = x;
-    this.Y = y;
-    this.R = r;
-}
-
-function LineFromArray(linearray) {
-    this.X1 = linearray[0];
-    this.Y1 = linearray[1];
-    this.X2 = linearray[2];
-    this.Y2 = linearray[3];
-}
-
 function Ray(x1, y1, x2, y2) {
     this.Orig = [x1, y1];
     var a = [x2 - x1, y2 - y1];
@@ -79,6 +59,19 @@ function ReflectVector(d, n) {
     var dn = -2 * Dot(d, n);
     var vnew = [dn * n[0] + d[0], dn * n[1] + d[1]];
     return vnew;
+}
+
+function TrasVerts(matrix, verts)
+{
+    var outverts = [];
+    for(var i=0;i<verts.length;i++)
+    {
+        outvert = [0,0];
+        outvert[0] = matrix[0][0] * verts[i][0] + matrix[0][1] * verts[i][1] + matrix[0][2] * 1;
+        outvert[1] = matrix[1][0] * verts[i][1] + matrix[1][1] * verts[i][1] + matrix[1][2] * 1;
+        outverts.push(outvert);
+    }
+    return outverts;
 }
 
 
@@ -337,18 +330,17 @@ function GameOnMouseDown(_this, canvas, evt) {
     _this.MouseY = evt.clientY - rect.top;
     _this.MouseSelected = null;
     _this.MouseSelectedObjIndex = 0;
-    _this.MouseSelectedVertIndex = 0;
 
     for (var i = 0; i < _this.Objects.length; i++) {
         var obj = _this.Objects[i];
         var pix = 5;
+        var outverts = TrasVerts(obj.matrix, obj.verts);
 
-        for (var j = 0; j < obj.verts.length; j++) {
-            if (Math.abs(_this.MouseX - obj.verts[j][0]) < pix &&
-                Math.abs(_this.MouseY - obj.verts[j][1]) < pix) {
+        for (var j = 0; j < outverts.length; j++) {
+            if (Math.abs(_this.MouseX - outverts[j][0]) < pix &&
+                Math.abs(_this.MouseY - outverts[j][1]) < pix) {
                 _this.MouseSelected = obj;
                 _this.MouseSelectedObjIndex = i;
-                _this.MouseSelectedVertIndex = j;
             }
         }
     }
@@ -358,7 +350,6 @@ function GameOnMouseUp(_this, canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     _this.MouseSelected = null;
     _this.MouseSelectedObjIndex = 0;
-    _this.MouseSelectedVertIndex = 0;
     _this.MouseX = evt.clientX - rect.left;
     _this.MouseY = evt.clientY - rect.top;
 }
@@ -381,7 +372,6 @@ function Game(canvas, backcanvas, frontctx, backctx) {
     this.MouseY = 0;
     this.MouseSelected = null;
     this.MouseSelectedObjIndex = 0;
-    this.MouseSelectedVertIndex = 0;    
     this.Objects = [];
 
     var _this = this;
@@ -406,6 +396,11 @@ function AddRay() {
         verts: [
             [x1, y1],
             [x2, y2]
+        ],
+        matrix: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
         ]
     });
 }
@@ -421,6 +416,11 @@ function AddBox() {
         objtype: "Box",
         verts: [
             [x, y],
+        ],
+        matrix: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
         ],
         width: w,
         height: h
@@ -438,9 +438,45 @@ function AddBall() {
         verts: [
             [x, y],
         ],
+        matrix: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+        ],
         radius: r,
     });
 }
+
+function AddSpaceShip() {
+
+    var x = parseInt(document.getElementById('SpaceShipX').value);
+    var y = parseInt(document.getElementById('SpaceShipY').value);
+    var rot = parseInt(document.getElementById('SpaceShipRot').value);
+    var r = parseInt(document.getElementById('SpaceShipR').value);
+    var rotRad = rot * Math.PI / 180;
+    var sin = Math.sin(rotRad);
+    var cos = Math.cos(rotRad);
+
+    gGame.Objects.push({
+        objtype: "SpaceShip",
+        verts: [
+            [-5, 5], // left fin
+            [0, -5], // top nose
+            [5, 5], // right fin
+            [3, 3], // right end flame
+            [-3, 3], // left end flame
+            [0, 5], // end flame
+            [3, 3], // left end flame
+        ],
+        matrix: [
+            [cos, -sin, x],
+            [sin, cos, y],
+            [0, 0, 1],
+        ],
+        radius: r,
+    });
+}
+
 
 function LineReflection(ray, HitLoc) {
     // Find where the ball colision happened.                                                                             
@@ -458,25 +494,42 @@ function LineReflection(ray, HitLoc) {
     return { ColPos: colPos, NewPos: newPos };
 }
 
-Game.prototype.DrawRay = function(rayobj)
-{    
-    var ctx = this.Ctx;    
-    var i=0;
-    var ray = new Ray(rayobj.verts[0][0], rayobj.verts[0][1], rayobj.verts[1][0], rayobj.verts[1][1]);
+Game.prototype.DrawSpaceShip = function(spaceShip) {
+    var ctx = this.Ctx;
+    var i = 0;
+
+    outverts = TrasVerts(spaceShip.matrix, spaceShip.verts);
+    ctx.strokeStyle = 'rgb(255, 0, 0)';
+    ctx.beginPath();
+    ctx.moveTo(outverts[0][0], outverts[0][1]);
+    for (i = 0; i < outverts.length; i++) {
+        ctx.lineTo(outverts[i][0], outverts[i][1]);
+    }
+    ctx.stroke();
+};
+
+Game.prototype.DrawRay = function(rayobj) {
+    var ctx = this.Ctx;
+    var i = 0;
+    var rayoutverts = TrasVerts(rayobj.matrix, rayobj.verts);
+
+    var ray = new Ray(rayoutverts[0][0], rayoutverts[0][1], rayoutverts[1][0], rayoutverts[1][1]);
     var speed = ray.Length;
     var hits;
     var HitLoc;
 
     ctx.strokeStyle = 'rgb(255, 0, 0)';
     ctx.beginPath();
-    ctx.moveTo(rayobj.verts[0][0], rayobj.verts[0][1]);
-    ctx.lineTo(rayobj.verts[1][0], rayobj.verts[1][1]);
+    ctx.moveTo(rayoutverts[0][0], rayoutverts[0][1]);
+    ctx.lineTo(rayoutverts[1][0], rayoutverts[1][1]);
     ctx.stroke();
 
     for (var j = 0; j < this.Objects.length; j++) {
         var obj = this.Objects[j];
-        if(obj.objtype == "Ball"){
-            hits = RayVsBall(ray.Orig, ray.Dir, [obj.verts[0][0], obj.verts[0][1]], obj.radius);
+        var outverts = TrasVerts(obj.matrix, obj.verts);
+
+        if (obj.objtype == "Ball") {            
+            hits = RayVsBall(ray.Orig, ray.Dir, [outverts[0][0], outverts[0][1]], obj.radius);
             for (i = 0; i < hits.length; i++) {
                 HitLoc = hits[i];
                 if (HitLoc.Time < speed) {
@@ -488,10 +541,13 @@ Game.prototype.DrawRay = function(rayobj)
                     ctx.stroke();
                 }
             }
-        }
-        else if(obj.objtype == "Box")
-        {
-            var box = new Box(obj.verts[0][0], obj.verts[0][1], obj.width, obj.height);
+        } else if (obj.objtype == "Box") {
+            var box = {
+                X: outverts[0][0],
+                Y: outverts[0][1],
+                Width: obj.width,
+                Height: obj.height
+            };
             hits = RayVsBox(ray.Orig, ray.Dir, box);
             for (i = 0; i < hits.length; i++) {
                 HitLoc = hits[i];
@@ -506,7 +562,7 @@ Game.prototype.DrawRay = function(rayobj)
             }
 
         }
-    }    
+    }
 };
 
 Game.prototype.Draw = function() {
@@ -516,27 +572,29 @@ Game.prototype.Draw = function() {
     ctx.fillStyle = 'rgb(100, 100, 100)';
     ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-    if(this.MouseSelected)
-    {
-        var vert = this.MouseSelected.verts[this.MouseSelectedVertIndex];
-        vert[0] = this.MouseX;
-        vert[1] = this.MouseY;
+    if (this.MouseSelected) {
+        this.MouseSelected.matrix[0][2] = this.MouseX;
+        this.MouseSelected.matrix[1][2] = this.MouseY;
     }
 
     for (var i = 0; i < this.Objects.length; i++) {
         var obj = this.Objects[i];
-        if(obj.objtype == "Ray"){
+        var outverts;
+
+        if (obj.objtype == "Ray") {
             this.DrawRay(obj);
-        }
-        else if(obj.objtype == "Box"){
+        } else if (obj.objtype == "Box") {
+            outverts = TrasVerts(obj.matrix, obj.verts);
             ctx.fillStyle = 'rgb(0, 0, 0)';
-            ctx.fillRect(obj.verts[0][0], obj.verts[0][1], obj.width, obj.height);
-        }
-        else if(obj.objtype == "Ball"){
+            ctx.fillRect(outverts[0][0], outverts[0][1], obj.width, obj.height);
+        } else if (obj.objtype == "Ball") {
+            outverts = TrasVerts(obj.matrix, obj.verts);
             ctx.strokeStyle = 'rgb(0, 0, 255)';
             ctx.beginPath();
-            ctx.arc(obj.verts[0][0], obj.verts[0][1], obj.radius, 0, 2 * Math.PI);
+            ctx.arc(outverts[0][0], outverts[0][1], obj.radius, 0, 2 * Math.PI);
             ctx.stroke();
+        } else if (obj.objtype == "SpaceShip") {
+            this.DrawSpaceShip(obj);            
         }
     }
 
