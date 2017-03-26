@@ -61,14 +61,52 @@ function ReflectVector(d, n) {
     return vnew;
 }
 
-function TrasVerts(matrix, verts)
-{
+function MatMult(a, b) {
+    var r = [];
+    for (var i = 0; i < a.length; i++) {
+        row = [0, 0, 0];
+        row[0] = a[0][0] * b[i][0] + a[0][1] * b[i][1] + a[0][2] * b[i][2];
+        row[1] = a[1][0] * b[i][0] + a[1][1] * b[i][1] + a[1][2] * b[i][2];
+        row[2] = a[2][0] * b[i][0] + a[2][1] * b[i][1] + a[2][2] * b[i][2];
+        r.push(row);
+    }
+    return r;
+}
+
+// from http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
+// https://ardoris.wordpress.com/2008/07/18/general-formula-for-the-inverse-of-a-3x3-matrix/
+function MatInverse(m) {
+    var a = m[0][0];
+    var b = m[0][1];
+    var c = m[0][2];
+    var d = m[1][0];
+    var e = m[1][1];
+    var f = m[1][2];
+    var g = m[2][0];
+    var h = m[2][1];
+    var i = m[2][2];
+
+    var detm = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+    // there is no solusion
+    // return null
+    if (Math.abs(detm) < 0.0001) {
+        return null;
+    }
+    var oodetm = 1 / detm;
+    var ret = [
+        [oodetm * (e * i - f * h), oodetm * (c * h - b * i), oodetm * (b * f - c * e)],
+        [oodetm * (f * g - d * i), oodetm * (a * i - c * g), oodetm * (c * d - a * f)],
+        [oodetm * (d * h - e * g), oodetm * (b * g - a * h), oodetm * (a * e - b * d)],
+    ];
+    return ret;
+}
+
+function TrasVerts(matrix, verts) {
     var outverts = [];
-    for(var i=0;i<verts.length;i++)
-    {
-        outvert = [0,0];
+    for (var i = 0; i < verts.length; i++) {
+        outvert = [0, 0];
         outvert[0] = matrix[0][0] * verts[i][0] + matrix[0][1] * verts[i][1] + matrix[0][2] * 1;
-        outvert[1] = matrix[1][0] * verts[i][1] + matrix[1][1] * verts[i][1] + matrix[1][2] * 1;
+        outvert[1] = matrix[1][0] * verts[i][0] + matrix[1][1] * verts[i][1] + matrix[1][2] * 1;
         outverts.push(outvert);
     }
     return outverts;
@@ -326,10 +364,12 @@ var gGame = null;
 function GameOnMouseDown(_this, canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     _this.MouseDown = true;
-    _this.MouseX = evt.clientX - rect.left;
-    _this.MouseY = evt.clientY - rect.top;
     _this.MouseSelected = null;
     _this.MouseSelectedObjIndex = 0;
+    _this.OldMouseX = _this.MouseX;
+    _this.OldMouseY = _this.MouseY;
+    _this.MouseSelectedMouseMode = document.querySelector('input[name = "SelectMode"]:checked').value;
+    _this.MouseSelectedVertIndex = 0;
 
     for (var i = 0; i < _this.Objects.length; i++) {
         var obj = _this.Objects[i];
@@ -341,6 +381,7 @@ function GameOnMouseDown(_this, canvas, evt) {
                 Math.abs(_this.MouseY - outverts[j][1]) < pix) {
                 _this.MouseSelected = obj;
                 _this.MouseSelectedObjIndex = i;
+                _this.MouseSelectedVertIndex = j;
             }
         }
     }
@@ -350,8 +391,8 @@ function GameOnMouseUp(_this, canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     _this.MouseSelected = null;
     _this.MouseSelectedObjIndex = 0;
-    _this.MouseX = evt.clientX - rect.left;
-    _this.MouseY = evt.clientY - rect.top;
+    _this.MouseSelectedMouseMode = null;
+    _this.MouseSelectedVertIndex = 0;
 }
 
 function GameOnMouseMove(_this, canvas, evt) {
@@ -370,8 +411,12 @@ function Game(canvas, backcanvas, frontctx, backctx) {
 
     this.MouseX = 0;
     this.MouseY = 0;
+    this.OldMouseX = 0;
+    this.OldMouseY = 0;
     this.MouseSelected = null;
     this.MouseSelectedObjIndex = 0;
+    this.MouseSelectedVertIndex = 0;
+    this.MouseSelectedMouseMode = null;
     this.Objects = [];
 
     var _this = this;
@@ -528,7 +573,7 @@ Game.prototype.DrawRay = function(rayobj) {
         var obj = this.Objects[j];
         var outverts = TrasVerts(obj.matrix, obj.verts);
 
-        if (obj.objtype == "Ball") {            
+        if (obj.objtype == "Ball") {
             hits = RayVsBall(ray.Orig, ray.Dir, [outverts[0][0], outverts[0][1]], obj.radius);
             for (i = 0; i < hits.length; i++) {
                 HitLoc = hits[i];
@@ -573,8 +618,54 @@ Game.prototype.Draw = function() {
     ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
     if (this.MouseSelected) {
-        this.MouseSelected.matrix[0][2] = this.MouseX;
-        this.MouseSelected.matrix[1][2] = this.MouseY;
+
+        var x = this.MouseX;
+        var y = this.MouseY;
+
+        var mouseVert = [x, y];
+        var mouse2obj = MatInverse(this.MouseSelected.matrix);
+
+        var MousePosInObjSpace = TrasVerts(mouse2obj, [mouseVert]);
+        var SelectedVertsInWorld = TrasVerts(this.MouseSelected.matrix, [this.MouseSelected.verts[this.MouseSelectedVertIndex]]);
+
+        if (this.MouseSelectedMouseMode === "obj_trans") {
+
+            this.MouseSelected.matrix[0][2] += (this.MouseX - SelectedVertsInWorld[0][0]);
+            this.MouseSelected.matrix[1][2] += (this.MouseY - SelectedVertsInWorld[0][1]);
+
+        } else if (this.MouseSelectedMouseMode === "obj_rot") {
+
+            var rot = this.OldMouseX - this.MouseX;
+            var rotRad = rot * Math.PI / 180;
+            var sin = Math.sin(rotRad);
+            var cos = Math.cos(rotRad);
+
+            this.MouseSelected.matrix[0][0] = cos;
+            this.MouseSelected.matrix[0][1] = -sin;
+            this.MouseSelected.matrix[1][0] = sin;
+            this.MouseSelected.matrix[1][1] = cos;
+
+        } else if (this.MouseSelectedMouseMode === "obj_scale") {
+
+            var sx = this.OldMouseX - this.MouseX;
+            var sy = this.OldMouseY - this.MouseY;
+
+            matrix = [
+                [sx, 0, 0],
+                [0, sy, 0],
+                [0, 0, 1],
+            ];
+
+            this.MouseSelected.matrix = MatMult(this.MouseSelected.matrix, matrix);
+
+        } else if (this.MouseSelectedMouseMode === "verts") {
+
+
+            this.MouseSelected.verts[this.MouseSelectedVertIndex][0] = MousePosInObjSpace[0][0];
+            this.MouseSelected.verts[this.MouseSelectedVertIndex][1] = MousePosInObjSpace[0][1];
+
+        }
+
     }
 
     for (var i = 0; i < this.Objects.length; i++) {
@@ -594,7 +685,7 @@ Game.prototype.Draw = function() {
             ctx.arc(outverts[0][0], outverts[0][1], obj.radius, 0, 2 * Math.PI);
             ctx.stroke();
         } else if (obj.objtype == "SpaceShip") {
-            this.DrawSpaceShip(obj);            
+            this.DrawSpaceShip(obj);
         }
     }
 

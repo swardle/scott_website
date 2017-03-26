@@ -40,7 +40,25 @@
         <div id="wrapper" style="background:#d0d0d0; clear:both; height:500px;">
             <table id="values_table">
                 <tr>
-                    <th><button onclick="AddRay()">Ray Pos</button></th>
+                    <th>Select Mode
+                    </th>
+                    <td>
+                        <input type="radio" id="verts" name="SelectMode" checked=true value="verts">verts
+                    </td>
+                    <td>
+                        <input type="radio" id="obj_trans" name="SelectMode" value="obj_trans">obj_trans
+                    </td>
+                    <td>
+                        <input type="radio" id="obj_rot" name="SelectMode" value="obj_rot">obj_rot
+                    </td>
+                    <td>
+                        <input type="radio" id="obj_scale" name="SelectMode" value="obj_scale">obj_scale
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <button onclick="AddRay()">Ray Pos</button>
+                    </th>
                     <td>X1
                         <input type="text" id="LineX1" value="9">
                     </td>
@@ -55,7 +73,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><button onclick="AddBox()">Box Pos</button></th>
+                    <th>
+                        <button onclick="AddBox()">Box Pos</button>
+                    </th>
                     <td>X
                         <input type="text" id="BoxX" value="30">
                     </td>
@@ -70,7 +90,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><button onclick="AddSpaceShip()">Space Ship</button></th>
+                    <th>
+                        <button onclick="AddSpaceShip()">Space Ship</button>
+                    </th>
                     <td>X
                         <input type="text" id="SpaceShipX" value="90">
                     </td>
@@ -85,7 +107,9 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><button onclick="AddBall()">Ball Pos</button></th>
+                    <th>
+                        <button onclick="AddBall()">Ball Pos</button>
+                    </th>
                     <td>X
                         <input type="text" id="BallX" value="90">
                     </td>
