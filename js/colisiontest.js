@@ -61,16 +61,52 @@ function ReflectVector(d, n) {
     return vnew;
 }
 
+// lerp between v0 when t=0 and v1 when t=1
+function lerp(v0, v1, t) {
+    return (1 - t) * v0 + t * v1;
+}
+
 function MatMult(a, b) {
     var r = [];
     for (var i = 0; i < a.length; i++) {
         row = [0, 0, 0];
-        row[0] = a[0][0] * b[i][0] + a[0][1] * b[i][1] + a[0][2] * b[i][2];
-        row[1] = a[1][0] * b[i][0] + a[1][1] * b[i][1] + a[1][2] * b[i][2];
-        row[2] = a[2][0] * b[i][0] + a[2][1] * b[i][1] + a[2][2] * b[i][2];
+        row[0] = b[0][0] * a[i][0] + b[0][1] * a[i][1] + b[0][2] * a[i][2];
+        row[1] = b[1][0] * a[i][0] + b[1][1] * a[i][1] + b[1][2] * a[i][2];
+        row[2] = b[2][0] * a[i][0] + b[2][1] * a[i][1] + b[2][2] * a[i][2];
         r.push(row);
     }
     return r;
+}
+
+function MakeTrans(tx, ty) {
+    var mat = [
+        [1, 0, tx],
+        [0, 1, ty],
+        [0, 0, 1]
+    ];
+    return mat;
+}
+
+function MakeRot(rot) {
+    var rotRad = rot * Math.PI / 180;
+    var sin = Math.sin(rotRad);
+    var cos = Math.cos(rotRad);
+
+    var mat = [
+        [cos, -sin, 0],
+        [sin, cos, 0],
+        [0, 0, 1],
+    ];
+    return mat;
+}
+
+function MakeScale(sx, sy) {
+    var mat = [
+        [sx, 0, 0],
+        [0, sy, 0],
+        [0, 0, 1]
+    ];
+    return mat;
 }
 
 // from http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
@@ -363,11 +399,15 @@ var gGame = null;
 
 function GameOnMouseDown(_this, canvas, evt) {
     var rect = canvas.getBoundingClientRect();
+
+    _this.MouseX = evt.clientX - rect.left;
+    _this.MouseY = evt.clientY - rect.top;
+    _this.OldMouseX = _this.MouseX;
+    _this.OldMouseY = _this.MouseY;
+
     _this.MouseDown = true;
     _this.MouseSelected = null;
     _this.MouseSelectedObjIndex = 0;
-    _this.OldMouseX = _this.MouseX;
-    _this.OldMouseY = _this.MouseY;
     _this.MouseSelectedMouseMode = document.querySelector('input[name = "SelectMode"]:checked').value;
     _this.MouseSelectedVertIndex = 0;
 
@@ -446,7 +486,10 @@ function AddRay() {
             [1, 0, 0],
             [0, 1, 0],
             [0, 0, 1],
-        ]
+        ],
+        pos: [0, 0],
+        scale: [1, 1],
+        rotation: 0,
     });
 }
 
@@ -467,6 +510,9 @@ function AddBox() {
             [0, 1, 0],
             [0, 0, 1],
         ],
+        pos: [0, 0],
+        scale: [1, 1],
+        rotation: 0,
         width: w,
         height: h
     });
@@ -488,6 +534,9 @@ function AddBall() {
             [0, 1, 0],
             [0, 0, 1],
         ],
+        pos: [0, 0],
+        scale: [1, 1],
+        rotation: 0,
         radius: r,
     });
 }
@@ -508,20 +557,29 @@ function AddSpaceShip() {
             [-5, 5], // left fin
             [0, -5], // top nose
             [5, 5], // right fin
-            [3, 3], // right end flame
-            [-3, 3], // left end flame
-            [0, 5], // end flame
-            [3, 3], // left end flame
+            [4, 3], // right end flame
+            [-4, 3], // left end flame
+            [0, 6], // end flame
+            [4, 3], // left end flame
         ],
         matrix: [
             [cos, -sin, x],
             [sin, cos, y],
             [0, 0, 1],
         ],
+        pos: [x, y],
+        scale: [1, 1],
+        rotation: rot,
         radius: r,
     });
 }
 
+function ApplyTransformToObj(obj) {
+    s = MakeScale(obj.scale[0], obj.scale[1]);
+    r = MakeRot(obj.rotation);
+    t = MakeTrans(obj.pos[0], obj.pos[1]);
+    obj.matrix = MatMult(t, MatMult(s, r));
+}
 
 function LineReflection(ray, HitLoc) {
     // Find where the ball colision happened.                                                                             
@@ -622,44 +680,40 @@ Game.prototype.Draw = function() {
         var x = this.MouseX;
         var y = this.MouseY;
 
-        var mouseVert = [x, y];
-        var mouse2obj = MatInverse(this.MouseSelected.matrix);
-
-        var MousePosInObjSpace = TrasVerts(mouse2obj, [mouseVert]);
-        var SelectedVertsInWorld = TrasVerts(this.MouseSelected.matrix, [this.MouseSelected.verts[this.MouseSelectedVertIndex]]);
-
         if (this.MouseSelectedMouseMode === "obj_trans") {
+            var SelectedVertsInWorld = TrasVerts(this.MouseSelected.matrix, [this.MouseSelected.verts[this.MouseSelectedVertIndex]]);
 
-            this.MouseSelected.matrix[0][2] += (this.MouseX - SelectedVertsInWorld[0][0]);
-            this.MouseSelected.matrix[1][2] += (this.MouseY - SelectedVertsInWorld[0][1]);
+            var tx = (this.MouseX - SelectedVertsInWorld[0][0]);
+            var ty = (this.MouseY - SelectedVertsInWorld[0][1]);
+            this.MouseSelected.pos[0] += tx;
+            this.MouseSelected.pos[1] += ty;
+
+            ApplyTransformToObj(this.MouseSelected);
+
 
         } else if (this.MouseSelectedMouseMode === "obj_rot") {
 
-            var rot = this.OldMouseX - this.MouseX;
-            var rotRad = rot * Math.PI / 180;
-            var sin = Math.sin(rotRad);
-            var cos = Math.cos(rotRad);
+            var r = (this.MouseX - this.OldMouseX);
+            this.MouseSelected.rotation += r;
 
-            this.MouseSelected.matrix[0][0] = cos;
-            this.MouseSelected.matrix[0][1] = -sin;
-            this.MouseSelected.matrix[1][0] = sin;
-            this.MouseSelected.matrix[1][1] = cos;
+            ApplyTransformToObj(this.MouseSelected);
 
         } else if (this.MouseSelectedMouseMode === "obj_scale") {
 
-            var sx = this.OldMouseX - this.MouseX;
-            var sy = this.OldMouseY - this.MouseY;
+            var sx = (this.MouseX - this.OldMouseX)/100.0;
+            var sy = (this.MouseY - this.OldMouseY)/100.0;
 
-            matrix = [
-                [sx, 0, 0],
-                [0, sy, 0],
-                [0, 0, 1],
-            ];
+            this.MouseSelected.scale[0] += sx;
+            this.MouseSelected.scale[1] += sy;
 
-            this.MouseSelected.matrix = MatMult(this.MouseSelected.matrix, matrix);
+            ApplyTransformToObj(this.MouseSelected);
 
         } else if (this.MouseSelectedMouseMode === "verts") {
 
+            var mouseVert = [x, y];
+            var mouse2obj = MatInverse(this.MouseSelected.matrix);
+
+            var MousePosInObjSpace = TrasVerts(mouse2obj, [mouseVert]);
 
             this.MouseSelected.verts[this.MouseSelectedVertIndex][0] = MousePosInObjSpace[0][0];
             this.MouseSelected.verts[this.MouseSelectedVertIndex][1] = MousePosInObjSpace[0][1];
