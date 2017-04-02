@@ -541,6 +541,76 @@ function AddBall() {
     });
 }
 
+
+function AddAsteroid() {
+
+    var x = parseInt(document.getElementById('AsteroidX').value);
+    var y = parseInt(document.getElementById('AsteroidY').value);
+    var type = parseInt(document.getElementById('AsteroidType').value);
+    var r = parseInt(document.getElementById('AsteroidR').value);
+
+
+    objs = {
+        a: [
+            [r * 0, r * 10],
+            [r * 8, r * 6],
+            [r * 10, r * -4],
+            [r * 4, r * -2],
+            [r * 6, r * -6],
+            [r * 0, r * -10],
+            [r * -10, r * -3],
+            [r * -10, r * 5],
+        ],
+        b: [
+            [r*0,     r* 10],
+            [r*8,     r* 6],
+            [r*10,    r*  -4],
+            [r*4,     r* -2],
+            [r*6,     r* -6],
+            [r*0,     r* -10],
+            [r*-8,    r*  -8],
+            [r*-6,    r*  -3],
+            [r*-8,    r*  -4],
+            [r*-10,   r*   5],
+        ],
+        c: [
+            [r*-4,    r*    10],
+            [r*1,     r*   8],
+            [r*7,     r*   10],
+            [r*10,    r*    -4],
+            [r*4,     r*   -2],
+            [r*6,     r*   -6],
+            [r*0,     r*   -10],
+            [r*-10,   r*     -3],
+            [r*-10,   r*     5],
+
+        ],
+        d: [
+            [r*-8,    r*   10],
+            [r*7,     r*  8],
+            [r*10,    r*   -2],
+            [r*6,     r*  -10],
+            [r*-2,    r*   -8],
+            [r*-6,    r*   -10],
+            [r*-10,   r*    -6],
+            [r*-7,    r*   0],
+        ],
+    };
+
+    gGame.Objects.push({
+        objtype: "Asteroid",
+        verts: objs[type],
+        matrix: [
+            [1, 0, x],
+            [0, 1, y],
+            [0, 0, 1],
+        ],
+        pos: [x, y],
+        scale: [1, 1],
+        rotation: 0,
+    });
+}
+
 function AddSpaceShip() {
 
     var x = parseInt(document.getElementById('SpaceShipX').value);
@@ -700,8 +770,8 @@ Game.prototype.Draw = function() {
 
         } else if (this.MouseSelectedMouseMode === "obj_scale") {
 
-            var sx = (this.MouseX - this.OldMouseX)/100.0;
-            var sy = (this.MouseY - this.OldMouseY)/100.0;
+            var sx = (this.MouseX - this.OldMouseX) / 100.0;
+            var sy = (this.MouseY - this.OldMouseY) / 100.0;
 
             this.MouseSelected.scale[0] += sx;
             this.MouseSelected.scale[1] += sy;
