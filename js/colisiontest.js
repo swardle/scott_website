@@ -546,7 +546,7 @@ function AddAsteroid() {
 
     var x = parseInt(document.getElementById('AsteroidX').value);
     var y = parseInt(document.getElementById('AsteroidY').value);
-    var type = parseInt(document.getElementById('AsteroidType').value);
+    var type = document.getElementById('AsteroidType').value.toLowerCase();
     var r = parseInt(document.getElementById('AsteroidR').value);
 
 
@@ -562,38 +562,38 @@ function AddAsteroid() {
             [r * -10, r * 5],
         ],
         b: [
-            [r*0,     r* 10],
-            [r*8,     r* 6],
-            [r*10,    r*  -4],
-            [r*4,     r* -2],
-            [r*6,     r* -6],
-            [r*0,     r* -10],
-            [r*-8,    r*  -8],
-            [r*-6,    r*  -3],
-            [r*-8,    r*  -4],
-            [r*-10,   r*   5],
+            [r * 0, r * 10],
+            [r * 8, r * 6],
+            [r * 10, r * -4],
+            [r * 4, r * -2],
+            [r * 6, r * -6],
+            [r * 0, r * -10],
+            [r * -8, r * -8],
+            [r * -6, r * -3],
+            [r * -8, r * -4],
+            [r * -10, r * 5],
         ],
         c: [
-            [r*-4,    r*    10],
-            [r*1,     r*   8],
-            [r*7,     r*   10],
-            [r*10,    r*    -4],
-            [r*4,     r*   -2],
-            [r*6,     r*   -6],
-            [r*0,     r*   -10],
-            [r*-10,   r*     -3],
-            [r*-10,   r*     5],
+            [r * -4, r * 10],
+            [r * 1, r * 8],
+            [r * 7, r * 10],
+            [r * 10, r * -4],
+            [r * 4, r * -2],
+            [r * 6, r * -6],
+            [r * 0, r * -10],
+            [r * -10, r * -3],
+            [r * -10, r * 5],
 
         ],
         d: [
-            [r*-8,    r*   10],
-            [r*7,     r*  8],
-            [r*10,    r*   -2],
-            [r*6,     r*  -10],
-            [r*-2,    r*   -8],
-            [r*-6,    r*   -10],
-            [r*-10,   r*    -6],
-            [r*-7,    r*   0],
+            [r * -8, r * 10],
+            [r * 7, r * 8],
+            [r * 10, r * -2],
+            [r * 6, r * -10],
+            [r * -2, r * -8],
+            [r * -6, r * -10],
+            [r * -10, r * -6],
+            [r * -7, r * 0],
         ],
     };
 
@@ -678,6 +678,22 @@ Game.prototype.DrawSpaceShip = function(spaceShip) {
     for (i = 0; i < outverts.length; i++) {
         ctx.lineTo(outverts[i][0], outverts[i][1]);
     }
+    ctx.stroke();
+};
+
+
+Game.prototype.DrawAsteroid = function(asteroid) {
+    var ctx = this.Ctx;
+    var i = 0;
+
+    outverts = TrasVerts(asteroid.matrix, asteroid.verts);
+    ctx.strokeStyle = 'rgb(255, 0, 0)';
+    ctx.beginPath();
+    ctx.moveTo(outverts[0][0], outverts[0][1]);
+    for (i = 0; i < outverts.length; i++) {
+        ctx.lineTo(outverts[i][0], outverts[i][1]);
+    }
+    ctx.closePath();
     ctx.stroke();
 };
 
@@ -808,6 +824,8 @@ Game.prototype.Draw = function() {
             ctx.beginPath();
             ctx.arc(outverts[0][0], outverts[0][1], obj.radius, 0, 2 * Math.PI);
             ctx.stroke();
+        } else if (obj.objtype == "Asteroid") {
+            this.DrawAsteroid(obj);
         } else if (obj.objtype == "SpaceShip") {
             this.DrawSpaceShip(obj);
         }
