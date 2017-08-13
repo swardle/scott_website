@@ -11,8 +11,8 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
-<body>
-    <div class="container home">
+<body style="overflow:hidden; margin:0">
+    <div class="container home" id="main">
         <header>
             <div class="hamburgler-menu">
                 <ul class="hamburgler-menu-list">
@@ -44,6 +44,14 @@
             </section>
         </div>
     </div>
+    <script language="javascript">
+        function autoResizeDiv()
+        {
+            document.getElementById('main').style.height = window.innerHeight +'px';
+        }
+        window.onresize = autoResizeDiv;
+        autoResizeDiv();
+    </script>
     <script src="js/menu.js"></script>
     <script src="js/name_anim.js"></script>
 </body>
