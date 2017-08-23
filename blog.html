@@ -9,19 +9,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700">
     <link rel="stylesheet" type="text/css" href="css/menu.css">
+    <link href="dist/css/animsition.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
-<body>
+<body class="animsition">
     <div class="container">
         <header class="header_top blog">
             <div class="hamburgler-menu">
                 <ul class="hamburgler-menu-list">
-                    <li><a href="index.html">HOME</a></li>
-                    <li><a href="blog.html">BLOG</a></li>
-                   <li><a href="about.html">ABOUT</li>
-                    <li><a href="contact.html">CONTACT</a></li>
-                    <li><a href="presentation.html">PRESENTATION</a></li>
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
                 </ul>
             </div>
             <div id="hamburgler" class="hamburgler-icon-wrapper">
@@ -30,11 +31,11 @@
             <a href="index.html"><img src="img/logo.png" class="logo"></a>
             <nav>
                 <ul class="main_nav">
-                    <li><a href="index.html">HOME</a></li>
-                    <li><a href="blog.html">BLOG</a></li>
-                    <li><a href="about.html">ABOUT</a></li>
-                    <li><a href="contact.html">CONTACT</a></li>
-                    <li><a href="presentation.html">PRESENTATION</a></li>
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</a></li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
                 </ul>
             </nav>
             <div class="absoluteContainer">
@@ -71,7 +72,7 @@
                         </p>
                         <img src="img/2.jpg" class="blog_img">
                     </header>
-                    <p>This first blog post is about me and my start in programming.  I have never been one to write a lot.  Those who know me know why I am very dyslexic so it takes a long time.  But my wife Seiko is learning web design so I figured I could help by learning some Javascript by writing some games.  I will go into these things on different days. </p>
+                    <p>This first blog post is about me and my start in programming. I have never been one to write a lot. Those who know me know why I am very dyslexic so it takes a long time. But my wife Seiko is learning web design so I figured I could help by learning some Javascript by writing some games. I will go into these things on different days. </p>
                     <a href="blog1.html" class="button_read_more">READ MORE</a>
                 </article>
                 <article class="blog_list blog_list_second">
@@ -82,7 +83,7 @@
                         </p>
                         <img src="img/2.jpg" class="blog_img">
                     </header>
-                    <p>I have relied my wife’s Seiko eye for design for a while.  She knows how to put things together and what will look good.  She graduated from BCIT in New Media Design & Web Development last summer.  For me the more interesting part is her learning to program but before she could do that she needed to learn PCs and this is that story.</p>
+                    <p>I have relied my wife’s Seiko eye for design for a while. She knows how to put things together and what will look good. She graduated from BCIT in New Media Design & Web Development last summer. For me the more interesting part is her learning to program but before she could do that she needed to learn PCs and this is that story.</p>
                     <a href="blog2.html" class="button_read_more">READ MORE</a>
                 </article>
             </section>
@@ -102,7 +103,14 @@
             <p>&copy; SCOTT WARDLE 2017</p>
         </footer>
     </div>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="dist/js/animsition.min.js" charset="utf-8"></script>
     <script src="js/menu.js"></script>
+    <script>
+    $(document).ready(function() {
+        $('.animsition').animsition();
+    });
+    </script>
 </body>
 
 </html>
