@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700">
     <link rel="stylesheet" type="text/css" href="css/menu.css">
     <link href="dist/css/animsition.min.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
 <body class="animsition">
@@ -40,7 +40,7 @@
             </nav>
             <div class="absoluteContainer">
                 <div id="page_title">
-                    This is Scott's presentation. Each page's introduction comes here
+                    PRESENTATION
                 </div>
             </div>
         </header>
@@ -57,7 +57,15 @@
                     </article>
                 </div>
                 <div class="videowrapper">
-                    <iframe width="640" height="360" src="https://www.youtube.com/embed/8KIvWJUYbDA?start=1" frameborder="0" allowfullscreen></iframe>
+                    <!-- <iframe width="640" height="360" src="https://www.youtube.com/embed/8KIvWJUYbDA" frameborder="0" allowfullscreen>
+                    </iframe> -->
+                    <div onclick="this.nextElementSibling.style.display='block'; this.style.display='none'">
+                        <img src="img/11.png" style="cursor:pointer" />
+                    </div>
+                    <div style="display:none">
+                        <iframe width="640" height="360" src="https://www.youtube.com/embed/8KIvWJUYbDA?start=1" frameborder="0" allowfullscreen>
+                    </iframe>
+                    </div>
                 </div>
             </section>
         </div>
@@ -76,7 +84,7 @@
             <p>&copy; SCOTT WARDLE 2017</p>
         </footer>
     </div>
-     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="dist/js/animsition.min.js" charset="utf-8"></script>
     <script src="js/menu.js"></script>
     <script>

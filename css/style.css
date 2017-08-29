@@ -96,6 +96,7 @@ section {
     max-width: 1020px;
     color: white;
     font-size: 40px;
+    letter-spacing: 5px;
 }
 
 
@@ -395,7 +396,7 @@ header.header_top.presen {
     width: 100%;
     position: relative;
     padding-bottom: 56.25%;
-    padding-top: 25px;
+   /* padding-top: 25px;*/
     height: 0;
 }
 
@@ -405,6 +406,12 @@ header.header_top.presen {
     left: 0;
     width: 70%;
     height: 70%;
+}
+
+.videowrapper img{
+    max-width:714px;
+    width:100%;
+    height: auto;
 }
 
 
