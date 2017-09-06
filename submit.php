@@ -1,7 +1,7 @@
 <?PHP
 
-	$to = "#"; #set addres to send for to 
-	$subject = "Message from Bluepalette Website"; #set the subject line 
+	$to = "swardle@gmail.com"; #set addres to send for to 
+	$subject = "Message from Scott's Website"; #set the subject line 
 	$headers = "From: Form Mailer"; #set the from address 
 	$forward = 0; # redirect? 1 : yes || 0 : no 
 	$location = "index.html"; #set page to redirect to, if 1 is above 
