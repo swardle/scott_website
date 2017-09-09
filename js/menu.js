@@ -14,12 +14,17 @@ function checkNav() {
 function closeNav() {
     document.body.classList.remove('hamburgler-active');
     var title = document.getElementById('page_title');
-    title.style.display = "block";
+    if (title != null) {
+        title.style.display = "block";
+    }
 }
 
 function openNav() {
     document.body.classList.add('hamburgler-active');
     // when click hamburgler, hide page description, Seiko add this code
     var title = document.getElementById('page_title');
-    title.style.display = "none";
+    if (title != null) {
+        title.style.display = "none";
+    }
+
 }
