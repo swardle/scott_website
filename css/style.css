@@ -135,7 +135,7 @@ i.fa.fa-twitter {
 
 .container.home {
     background: #2B303A;
-    height: 820px;
+    /*height: 820px;*/
 }
 
 h1.scott_name {
@@ -432,6 +432,20 @@ iframe{
     margin-bottom: 50px;
 }
 
+/********************** thank you **********************/
+img.thanks{
+    width: 80%;
+    height: auto;
+    margin-left: 15%;
+}
+
+a.back_link{
+    display: block;
+    text-align: right;
+    margin-right: 30%;
+    margin-top: -3%;
+}
+
 
 /********************** media query **********************/
 
@@ -450,7 +464,7 @@ iframe{
 @media(max-width: 768px) {
   
     h1.scott_name {
-        padding-top:250px;
+        padding-top:190px;
         font-size: 4vw;
         letter-spacing: 12px;
     }
@@ -526,6 +540,10 @@ iframe{
     /* */
     .absoluteContainer {
         height: 340px;
+    }
+
+    h1.scott_name {
+        padding-top:250px;
     }
 }
 
