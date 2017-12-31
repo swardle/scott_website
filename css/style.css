@@ -403,8 +403,8 @@ header.header_top.presen {
     clear: both;
     width: 100%;
     position: relative;
-    padding-bottom: 56.25%;
-   /* padding-top: 25px;*/
+    padding-bottom: 46.25%;
+    padding-top: 25px;
     height: 0;
 }
 
