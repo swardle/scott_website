@@ -451,20 +451,20 @@ a.back_link{
 
 @media(max-width:2560px){
     h1.scott_name{
-        padding-top:62%;
+        padding-top:50%;
     }
 }
 
 @media(max-width:1440px){
     h1.scott_name{
-        padding-top:250px;
+        padding-top:40%;
     }
 }
 
 @media(max-width: 768px) {
   
     h1.scott_name {
-        padding-top:190px;
+        padding-top:47%;
         font-size: 4vw;
         letter-spacing: 12px;
     }
