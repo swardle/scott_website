@@ -14,6 +14,8 @@ class ResourceCache {
         this.resourceCache = {};
         this.readyCallbacks = [];
     }
+
+    // ResourceCache::Load
     // Load an image url or an array of image urls
     load(urlOrArr) {
         if (urlOrArr instanceof Array) {
@@ -25,7 +27,9 @@ class ResourceCache {
         }
     };
 
-    _load(url) {
+    // ResourceCache::_Load
+    // only loads one at a time
+    _load(url: string) {
         if (this.resourceCache[url]) {
             return this.resourceCache[url];
         } else {
@@ -43,11 +47,15 @@ class ResourceCache {
         }
     };
 
-    get(url) {
-        return this.resourceCache[url];
+    // ResourceCache::get
+    // get a maybe cached image
+    get(url): HTMLImageElement {
+        return <HTMLImageElement>this.resourceCache[url];
     };
 
-    isReady() {
+    // ResourceCache::isReady
+    // get a maybe cached image
+    isReady(): boolean {
         var ready = true;
         for (var k in this.resourceCache) {
             if (this.resourceCache.hasOwnProperty(k) &&
@@ -58,6 +66,8 @@ class ResourceCache {
         return ready;
     };
 
+    // ResourceCache::get
+    // get a maybe cached image
     onReady(func) {
         this.readyCallbacks.push(func);
     };
@@ -592,56 +602,57 @@ class Game {
 }
 
 
+namespace asteroids {
+    export function newGame() {
+        let gGame: Game = null;
+        console.log("myNewAnim");
+        let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+        if (canvas.getContext) {
+            let backcanvas: HTMLCanvasElement = document.createElement('canvas');
+            backcanvas.width = canvas.width;
+            backcanvas.height = canvas.height;
+            let backctx: CanvasRenderingContext2D = backcanvas.getContext('2d');
+            let frontctx: CanvasRenderingContext2D = canvas.getContext('2d');
 
-function newGame() {
-    let gGame: Game = null;
-    console.log("myNewAnim");
-    let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-    if (canvas.getContext) {
-        let backcanvas: HTMLCanvasElement = document.createElement('canvas');
-        backcanvas.width = canvas.width;
-        backcanvas.height = canvas.height;
-        let backctx: CanvasRenderingContext2D = backcanvas.getContext('2d');
-        let frontctx: CanvasRenderingContext2D = canvas.getContext('2d');
-
-        if (gGame === null) {
-            console.log("myNewAnim");
-            gGame = new Game(canvas, backcanvas, frontctx, backctx);
-            let id = setInterval(updateFrame, 60);
-        }
-    }
-
-    document.addEventListener('keyup', function (event) {
-        if (event.keyCode == 37) {
-            if (gGame !== null) {
-                gGame.LeftButtonUp();
-            }
-        } else if (event.keyCode == 39) {
-            if (gGame !== null) {
-                gGame.RightButtonUp();
+            if (gGame === null) {
+                console.log("myNewAnim");
+                gGame = new Game(canvas, backcanvas, frontctx, backctx);
+                let id = setInterval(updateFrame, 60);
             }
         }
-    });
 
-    document.addEventListener('keydown', function (event) {
-        if (event.keyCode == 37) {
-            if (gGame !== null) {
-                gGame.LeftButtonDown();
+        document.addEventListener('keyup', function (event) {
+            if (event.keyCode == 37) {
+                if (gGame !== null) {
+                    gGame.LeftButtonUp();
+                }
+            } else if (event.keyCode == 39) {
+                if (gGame !== null) {
+                    gGame.RightButtonUp();
+                }
             }
-        } else if (event.keyCode == 39) {
-            if (gGame !== null) {
-                gGame.RightButtonDown();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.keyCode == 37) {
+                if (gGame !== null) {
+                    gGame.LeftButtonDown();
+                }
+            } else if (event.keyCode == 39) {
+                if (gGame !== null) {
+                    gGame.RightButtonDown();
+                }
+            } else if (event.keyCode == 32) {
+                if (gGame !== null) {
+                    gGame.ResetField();
+                }
             }
-        } else if (event.keyCode == 32) {
-            if (gGame !== null) {
-                gGame.ResetField();
-            }
+        });
+
+        function updateFrame() {
+            gGame.Draw();
         }
-    });
-
-    function updateFrame() {
-        gGame.Draw();
     }
 }
 
-gCache.onReady(newGame);
+gCache.onReady(asteroids.newGame);
