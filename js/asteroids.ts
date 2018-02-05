@@ -1,400 +1,100 @@
 namespace asteroids {
-
-    // a very simple clone of atari breakout. 
-    var gPlayerSpeed: number = 11;
-    var gBallSpeed: number = 8;
-    // x,y,width,hieght
-    var gInitBallBox: number[] = [8, 128, 8, 8];
-    var gInitPlayerBox: number[] = [0, 256 - 4, 64, 4];
-    var gInitField0Box: number[] = [0, 0, 32, 16];
-
-    // ResourceCache a cache for loading art for the game.
-    class ResourceCache {
-        resourceCache = {};
-        readyCallbacks = [];
-        constructor() {
-            this.resourceCache = {};
-            this.readyCallbacks = [];
-        }
-
-        // ResourceCache::Load
-        // Load an image url or an array of image urls
-        load(urlOrArr) {
-            if (urlOrArr instanceof Array) {
-                urlOrArr.forEach(function (url) {
-                    this._load(url);
-                });
-            } else {
-                this._load(urlOrArr);
-            }
-        };
-
-        // ResourceCache::_Load
-        // only loads one at a time
-        _load(url: string) {
-            if (this.resourceCache[url]) {
-                return this.resourceCache[url];
-            } else {
-                var img = new Image();
-                var _this = this;
-                img.onload = function () {
-                    _this.resourceCache[url] = img;
-
-                    if (_this.isReady()) {
-                        _this.readyCallbacks.forEach(function (func) { func(); });
-                    }
-                };
-                this.resourceCache[url] = false;
-                img.src = url;
-            }
-        };
-
-        // ResourceCache::get
-        // get a maybe cached image
-        get(url): HTMLImageElement {
-            return <HTMLImageElement>this.resourceCache[url];
-        };
-
-        // ResourceCache::isReady
-        // get a maybe cached image
-        isReady(): boolean {
-            var ready = true;
-            for (var k in this.resourceCache) {
-                if (this.resourceCache.hasOwnProperty(k) &&
-                    !this.resourceCache[k]) {
-                    ready = false;
-                }
-            }
-            return ready;
-        };
-
-        // ResourceCache::get
-        // get a maybe cached image
-        onReady(func) {
-            this.readyCallbacks.push(func);
-        };
+    function randomInt(min: number, max: number): number {
+        return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
-    var gBox: string = "img/box.png";
-    export let gCache: ResourceCache = new ResourceCache();
-    gCache.load(gBox);
-
-    class Ball {
-        X: number = gInitBallBox[0];
-        Y: number = gInitBallBox[1];
-        Width: number = gInitBallBox[2];
-        Height: number = gInitBallBox[3];
-        Speed: number = gBallSpeed;
-        Velocity: number[] = [0, gBallSpeed];
-        Direction: number[] = Normalize(this.Velocity);
-        OldPos: number[] = [gInitBallBox[0] - this.Velocity[1], gInitBallBox[1] - this.Velocity[1]];
-        IsHit: boolean = false;
-
-        // Ball::Ball
-        constructor() {
-        }
-
-        // Ball::BallCollision
-        BallCollision(testBox, objectType, collisionFunction) {
-            var a = new Line(this.X, this.Y, this.OldPos[0], this.OldPos[1]);
-            var HitLoc = collisionFunction(a, testBox);
-            return HitLoc;
-        }
-
-        // Ball::BallReflection
-        BallReflection(testBox, objectType, collisionFunction, HitLoc) {
-            var a = new Line(this.X, this.Y, this.OldPos[0], this.OldPos[1]);
-            HitLoc = collisionFunction(a, testBox);
-            // Find where the ball colision happened.                                                                             
-            var balldir = NormalizeLine(a);
-            var justBeforeHit = HitLoc.Time - 1;
-            var colBallPos = [a.X2 + balldir[0] * justBeforeHit, a.Y2 + balldir[1] * justBeforeHit];
-            // Calulate the reflected vector so we have the new direction.                       
-            var vnew = ReflectVector(balldir, HitLoc.Normal);
-
-            // With Players hack the colision normal so it will bouce different depending on where it hits the players box. 
-            // If it hits the left size it goes left right side goes right
-            if (objectType == "Player") {
-                // NormalizedDistFromLeftSize the left side of the box is -0.5 right size of the box is 0.5.                                                      
-                var NormalizedDistFromLeftSize = (colBallPos[0] + (this.Width / 2.0) - (testBox.X + (testBox.Width / 2.0))) / testBox.Width;
-                NormalizedDistFromLeftSize = Math.min(Math.max(NormalizedDistFromLeftSize, -0.5), 0.5);
-                // Move the range to be 1/4 * PI                                                                                                                  
-                //      this will make normallized vector using sin and cos like this \/                                                                          
-                // If it is close to the right the ball goes right if left left.                                                                                  
-                NormalizedDistFromLeftSize *= (1 / 2) * Math.PI;
-                vnew[0] = Math.sin(NormalizedDistFromLeftSize);
-                vnew[1] = -Math.cos(NormalizedDistFromLeftSize);
-            }
-
-            this.OldPos = colBallPos;
-            // From the colision point move the ball away keeping the same speed.                                                                             
-            this.X = colBallPos[0] + vnew[0] * (gBallSpeed - justBeforeHit);
-            this.Y = colBallPos[1] + vnew[1] * (gBallSpeed - justBeforeHit);
-            // Set the new velocity given the reflected vector.                                                                                               
-            this.Velocity[0] = vnew[0] * gBallSpeed;
-            this.Velocity[1] = vnew[1] * gBallSpeed;
-            // Mark that we have already moved the ball so we don't move it next frame                                                                        
-            this.IsHit = true;
-        }
-
-        // Draw the ball centered
-        // Ball::Draw
-        Draw(ctx) {
-            // Draw Ball
-            //ctx.fillStyle = 'rgb(0, 0, 200)';
-            //ctx.fillRect(this.X - this.Width / 2.0, this.Y - this.Height / 2.0, this.Width, this.Height);
-
-            ctx.fillStyle = 'blue';
-            ctx.beginPath();
-            ctx.arc(this.X, this.Y, gInitBallBox[2] / 2, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-
-        // Ball::Move
-        Move() {
-            // If the ball was hit last frame don't move it as it has already been moved when the ball was hit. 
-            if (!this.IsHit) {
-                // Animate Ball
-                this.OldPos = [this.X, this.Y];
-                this.X += this.Velocity[0];
-                this.Y += this.Velocity[1];
-            } else {
-                this.IsHit = false;
-            }
-        }
+    // lerp between v0 when t=0 and v1 when t=1
+    function lerp(v0: number, v1: number, t: number): number {
+        return (1 - t) * v0 + t * v1;
     }
 
-    class Box {
-        X: number;
-        Y: number;
-        Width: number;
-        Height: number;
-        constructor(x: number, y: number, width: number, height: number) {
-            this.X = x;
-            this.Y = y;
-            this.Width = width;
-            this.Height = height;
+    function MatMult(a: number[][], b: number[][]): number[][] {
+        let r: number[][] = [];
+        for (var i = 0; i < a.length; i++) {
+            let row: number[] = [0, 0, 0];
+            row[0] = b[0][0] * a[i][0] + b[0][1] * a[i][1] + b[0][2] * a[i][2];
+            row[1] = b[1][0] * a[i][0] + b[1][1] * a[i][1] + b[1][2] * a[i][2];
+            row[2] = b[2][0] * a[i][0] + b[2][1] * a[i][1] + b[2][2] * a[i][2];
+            r.push(row);
         }
+        return r;
     }
 
-    function BoxFromArray(boxarray): Box {
-        return new Box(boxarray[0], boxarray[1], boxarray[2], boxarray[3])
+    function MakeTrans(tx: number, ty: number): number[][] {
+        var mat = [
+            [1, 0, tx],
+            [0, 1, ty],
+            [0, 0, 1]
+        ];
+        return mat;
     }
 
-    class Line {
-        X1: number;
-        Y1: number;
-        X2: number;
-        Y2: number;
-        constructor(x1: number, y1: number, x2: number, y2: number) {
-            this.X1 = x1;
-            this.Y1 = y1;
-            this.X2 = x2;
-            this.Y2 = y2;
-        }
+    function MakeRot(rot: number): number[][] {
+        var rotRad = rot * Math.PI / 180;
+        var sin = Math.sin(rotRad);
+        var cos = Math.cos(rotRad);
+
+        var mat = [
+            [cos, -sin, 0],
+            [sin, cos, 0],
+            [0, 0, 1],
+        ];
+        return mat;
     }
 
-    function LineFromArray(linearray): Line {
-        return new Line(linearray[0], linearray[1], linearray[2], linearray[3]);
+    function MakeScale(sx: number, sy: number): number[][] {
+        var mat = [
+            [sx, 0, 0],
+            [0, sy, 0],
+            [0, 0, 1]
+        ];
+        return mat;
     }
 
-    // return a normal from a line
-    function VectorLength(a: number[]): number {
-        // a normal 
-        let len = Math.sqrt(a[0] * a[0] + a[1] * a[1]);
-        return len;
+    // from http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche23.html
+    // https://ardoris.wordpress.com/2008/07/18/general-formula-for-the-inverse-of-a-3x3-matrix/
+    function MatInverse(m: number[][]): number[][] {
+        var a = m[0][0];
+        var b = m[0][1];
+        var c = m[0][2];
+        var d = m[1][0];
+        var e = m[1][1];
+        var f = m[1][2];
+        var g = m[2][0];
+        var h = m[2][1];
+        var i = m[2][2];
+
+        var detm = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+        // there is no solusion
+        // return null
+        if (Math.abs(detm) < 0.0001) {
+            return null;
+        }
+        var oodetm = 1 / detm;
+        var ret = [
+            [oodetm * (e * i - f * h), oodetm * (c * h - b * i), oodetm * (b * f - c * e)],
+            [oodetm * (f * g - d * i), oodetm * (a * i - c * g), oodetm * (c * d - a * f)],
+            [oodetm * (d * h - e * g), oodetm * (b * g - a * h), oodetm * (a * e - b * d)],
+        ];
+        return ret;
     }
 
-    // return a normal from a line
-    function NormalizeLine(a: Line): number[] {
-        // a normal 
-        let l = [a.X1 - a.X2, a.Y1 - a.Y2];
-        let llen = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
-        let oollen = 1.0 / llen;
-        l[0] = l[0] * oollen;
-        l[1] = l[1] * oollen;
-        return l;
+    function TrasVerts(matrix: number[][], verts: number[][]): number[][] {
+        let outverts: number[][] = [];
+        for (let i: number = 0; i < verts.length; i++) {
+            let outvert: number[] = [0, 0];
+            outvert[0] = matrix[0][0] * verts[i][0] + matrix[0][1] * verts[i][1] + matrix[0][2] * 1;
+            outvert[1] = matrix[1][0] * verts[i][0] + matrix[1][1] * verts[i][1] + matrix[1][2] * 1;
+            outverts.push(outvert);
+        }
+        return outverts;
     }
 
-    // return a normal from a line
-    function Normalize(a: number[]): number[] {
-        // clone the vector
-        let l = a.slice();
-        let llen = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
-        let oollen = 1.0 / llen;
-        l[0] = l[0] * oollen;
-        l[1] = l[1] * oollen;
-        return l;
-    }
-
-    // dot 2 vectors a and b
-    function Dot(a: number[], b: number[]): number {
-        return a[0] * b[0] + a[1] * b[1];
-    }
-
-    // d is a vector
-    // n is the normal of the vector to reflect over
-    //
-    // Vnew = ( -2*(V dot N)*N + V )
-    function ReflectVector(d: number[], n: number[]) {
-        let dn: number = -2 * Dot(d, n);
-        let vnew: number[] = [dn * n[0] + d[0], dn * n[1] + d[1]];
-        return vnew;
-    }
-
-
-
-    function LineVsBoxInside(a: Line, b: Box) {
-        let rdir: number[] = NormalizeLine(a);
-        let dfx: number = 90000.0;
-        let dfy: number = 90000.0;
-        if (Math.abs(rdir[0]) > 0.0001) {
-            dfx = 1.0 / rdir[0];
-        }
-        if (Math.abs(rdir[1]) > 0.0001) {
-            dfy = 1.0 / rdir[1];
-        }
-
-        // time to hit left, right, bottom, top
-        let t1: number = (b.X - a.X2) * dfx;
-        let t2: number = (b.X + b.Width - a.X2) * dfx;
-        let t3: number = (b.Y + b.Height - a.Y2) * dfy;
-        let t4: number = (b.Y - a.Y2) * dfy;
-        let xdir: number[] = [1, 0];
-        let ydir: number[] = [0, 1];
-        let tdir: number[] = [0, 1];
-
-        // x did we hit the left wall first?
-        let xmin: number = t1;
-        let xmax: number = t2;
-        xdir[0] = 1;
-        if (t1 < t2) {
-            // nope we hit the right wall first.
-            xmin = t2;
-            xmax = t1;
-            xdir[0] = -1;
-        }
-
-        // If we hit the left or right wall in the past then 
-        // really we should hit the other wall. 
-        if (xmin < 0) {
-            xmin = xmax;
-            xdir[0] *= -1;
-        }
-
-        // y
-        let ymin: number = t3;
-        let ymax: number = t4;
-        ydir[1] = -1;
-        if (t3 < t4) {
-            ymin = t4;
-            ymax = t3;
-            ydir[1] = 1;
-        }
-
-        if (ymin < 0) {
-            ymin = ymax;
-            ydir[1] *= -1;
-        }
-
-        // pick which one is closer x or y. 
-        let tmin: number = ymin;
-        tdir = ydir;
-        if (ymin > xmin) {
-            tmin = xmin;
-            tdir = xdir;
-        }
-
-        if (tmin < 0) {
-            return { IsHit: false, Normal: tdir, Time: tmin };
-        }
-
-        return { IsHit: true, Normal: tdir, Time: tmin };
-
-    }
-
-    // Line a vs box b
-    // {IsHit=false, Normal=side, Time=t}
-    function LineVsBox(a: Line, b: Box) {
-        let rdir: number[] = NormalizeLine(a);
-        let dfx: number = 90000.0;
-        let dfy: number = 90000.0;
-        if (Math.abs(rdir[0]) > 0.0001) {
-            dfx = 1.0 / rdir[0];
-        }
-        if (Math.abs(rdir[1]) > 0.0001) {
-            dfy = 1.0 / rdir[1];
-        }
-
-        // time to hit left, right, bottom, top
-        let t1: number = (b.X - a.X2) * dfx;
-        let t2: number = (b.X + b.Width - a.X2) * dfx;
-        let t3: number = (b.Y + b.Height - a.Y2) * dfy;
-        let t4: number = (b.Y - a.Y2) * dfy;
-
-        let yside: number[] = [0, 0];
-        let xside: number[] = [0, 0];
-        let side: number[] = [0, 0];
-        let tmin: number;
-        let tmax: number;
-        let xmin: number;
-        let ymin: number;
-        let xmax: number;
-        let ymax: number;
-
-        // See if the left closer then the right
-        if (t1 < t2) {
-            xside = [-1, 0]; // left
-            xmin = t1;
-            xmax = t2;
-        } else {
-            xside = [1, 0]; // right
-            xmin = t2;
-            xmax = t1;
-        }
-
-        // See if the bottom closer then the top
-        if (t3 < t4) {
-            yside = [0, 1]; // bottom 
-            ymin = t3;
-            ymax = t4;
-        } else {
-            yside = [0, -1]; // top
-            ymin = t4;
-            ymax = t3;
-        }
-
-        // See if the side hit before top or bottom
-        if (xmin > ymin) {
-            side = xside;
-            tmin = xmin;
-        } else {
-            side = yside;
-            tmin = ymin;
-        }
-
-        // see what was hit last top/bottom vs sides
-        if (xmax < ymax) {
-            tmax = xmax;
-        } else {
-            tmax = ymax;
-        }
-
-        let t: number;
-        // if tmax < 0, ray (line) is intersecting AABB, but whole AABB is behing us
-        if (tmax < 0) {
-            t = tmax;
-            return { IsHit: false, Normal: side, Time: 0.0 };
-        }
-
-        // if tmin > tmax, ray doesn't intersect AABB
-        if (tmin > tmax) {
-            t = tmax;
-            return { IsHit: false, Normal: side, Time: 0.0 };
-        }
-
-        t = tmin;
-        return { IsHit: true, Normal: side, Time: t };
+    function ApplyTransformToObj(obj) {
+        let s: number[][] = MakeScale(obj.scale[0], obj.scale[1]);
+        let r: number[][] = MakeRot(obj.rotation);
+        let t: number[][] = MakeTrans(obj.pos[0], obj.pos[1]);
+        obj.matrix = MatMult(t, MatMult(s, r));
     }
 
     class Game {
@@ -408,17 +108,7 @@ namespace asteroids {
         WorldHight: number;
         PlayerVelocityX: number = 0;
         PlayerVelocityY: number = 0;
-        WorldBox: Box;
-        Player: Box;
-        Field0Box: Box;
-        Ball: Ball;
-        Score: number = 0;
-        Field: number[][] = [[]];
-
-        BoxCanvas: HTMLCanvasElement;
-        BoxCtx: CanvasRenderingContext2D;
-
-        ScoreElement: HTMLElement;
+        Objects: any[] = [];
 
         // Game::Game
         constructor(canvas: HTMLCanvasElement, backcanvas: HTMLCanvasElement,
@@ -429,180 +119,171 @@ namespace asteroids {
             this.FrontCtx = frontctx;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
-            this.WorldWidth = canvas.width;
-            this.WorldHight = canvas.height;
-            this.PlayerVelocityX = 0;
-            this.PlayerVelocityY = 0;
-            this.WorldBox = BoxFromArray([0, 0, this.WorldWidth, this.WorldHight]);
-            this.Player = BoxFromArray(gInitPlayerBox);
-            this.Field0Box = BoxFromArray(gInitField0Box);
-            this.ResetField();
 
-
-            let img = gCache.get(gBox);
-
-            this.BoxCanvas = document.createElement("canvas");
-            this.BoxCtx = this.BoxCanvas.getContext('2d');
-
-            this.BoxCanvas.width = gInitField0Box[2];
-            this.BoxCanvas.height = gInitField0Box[3];
-
-            this.BoxCtx.drawImage(img, 0, 0, img.width, img.height,
-                0, 0, gInitField0Box[2], gInitField0Box[3]);
-            this.BoxCtx.globalCompositeOperation = "multiply"; // 'source-atop';
-            this.BoxCtx.fillStyle = 'red';
-            this.BoxCtx.fillRect(0, 0, gInitField0Box[2], gInitField0Box[3]);
-
-            this.ScoreElement = document.getElementById("score");
+            this.Objects = [];
+            this.AddAsteroid();
+            this.AddAsteroid();
+            this.AddAsteroid();
+            this.AddSpaceShip();
         }
 
+        AddSpaceShip(): void {
+            let sizeSpaceShip: number = 10;
+            let x: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
+            let y: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
+            let rot: number = randomInt(0, 359);
+            let r: number = sizeSpaceShip / 5.0;
+            let rotRad: number = rot * Math.PI / 180;
+            let sin: number = Math.sin(rotRad);
+            let cos: number = Math.cos(rotRad);
 
-        // Game::RightButtonDown
-        RightButtonDown() {
-            this.PlayerVelocityX = gPlayerSpeed;
-        };
+            this.Objects.push({
+                objtype: "SpaceShip",
+                verts: [
+                    [-5, 5], // left fin
+                    [0, -5], // top nose
+                    [5, 5], // right fin
+                    [4, 3], // right end flame
+                    [-4, 3], // left end flame
+                    [0, 6], // end flame
+                    [4, 3], // left end flame
+                ],
+                matrix: [
+                    [cos, -sin, x],
+                    [sin, cos, y],
+                    [0, 0, 1],
+                ],
+                pos: [x, y],
+                scale: [1, 1],
+                rotation: rot,
+                radius: r,
+            });
+        }
 
-        // Game::LeftButtonDown
-        LeftButtonDown() {
-            this.PlayerVelocityX = -gPlayerSpeed;
-        };
+        // Game::AddAsteroid
+        AddAsteroid(): void {
+            let sizeAsteroid: number = 10;
+            let x: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+            let y: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+            let types: string = "abcd"
+            let t: number = randomInt(0, types.length-1);
+            let r: number = sizeAsteroid / 10.0;
 
-        // Game::LeftButtonUp
-        LeftButtonUp() {
-            this.PlayerVelocityX = 0;
-        };
+            let objs: any = {
+                a: [
+                    [r * 0, r * 10],
+                    [r * 8, r * 6],
+                    [r * 10, r * -4],
+                    [r * 4, r * -2],
+                    [r * 6, r * -6],
+                    [r * 0, r * -10],
+                    [r * -10, r * -3],
+                    [r * -10, r * 5],
+                ],
+                b: [
+                    [r * 0, r * 10],
+                    [r * 8, r * 6],
+                    [r * 10, r * -4],
+                    [r * 4, r * -2],
+                    [r * 6, r * -6],
+                    [r * 0, r * -10],
+                    [r * -8, r * -8],
+                    [r * -6, r * -3],
+                    [r * -8, r * -4],
+                    [r * -10, r * 5],
+                ],
+                c: [
+                    [r * -4, r * 10],
+                    [r * 1, r * 8],
+                    [r * 7, r * 10],
+                    [r * 10, r * -4],
+                    [r * 4, r * -2],
+                    [r * 6, r * -6],
+                    [r * 0, r * -10],
+                    [r * -10, r * -3],
+                    [r * -10, r * 5],
 
-        // Game::RightButtonUp
-        RightButtonUp() {
-            this.PlayerVelocityX = 0;
-        };
+                ],
+                d: [
+                    [r * -8, r * 10],
+                    [r * 7, r * 8],
+                    [r * 10, r * -2],
+                    [r * 6, r * -10],
+                    [r * -2, r * -8],
+                    [r * -6, r * -10],
+                    [r * -10, r * -6],
+                    [r * -7, r * 0],
+                ],
+            };
 
-        // Game::ResetField
-        ResetField() {
-            this.Ball = new Ball();
-            this.Score = 0;
+            this.Objects.push({
+                objtype: "Asteroid",
+                verts: objs[types[t]],
+                matrix: [
+                    [1, 0, x],
+                    [0, 1, y],
+                    [0, 0, 1],
+                ],
+                pos: [x, y],
+                scale: [1, 1],
+                rotation: 0,
+            });
+        }
 
-            var widthInBoxes = this.WorldWidth / gInitField0Box[2];
-            let stars: string = "";
-            for (let i: number = 0; i < widthInBoxes; i++) {
-                stars += '*';
+        DrawSpaceShip(spaceShip) {
+            let ctx = this.Ctx;
+            let i:number = 0;
+
+            let outverts:number[][] = TrasVerts(spaceShip.matrix, spaceShip.verts);
+            ctx.strokeStyle = 'rgb(255, 255, 255)';
+            ctx.beginPath();
+            ctx.moveTo(outverts[0][0], outverts[0][1]);
+            for (i = 0; i < outverts.length; i++) {
+                ctx.lineTo(outverts[i][0], outverts[i][1]);
             }
-            var a = [
-                stars,
-                stars,
-                stars,
-                "",
-                "",
-                "",
-                stars,
-                stars,
-            ];
-
-            this.Field = [];
-            for (var i = 0; i < a.length; i++) {
-                var temp: number[] = [];
-                for (var j = 0; j < a[i].length; j++) {
-                    if (a[i][j] === "*") {
-                        temp.push(1);
-                    }
-                }
-                this.Field.push(temp);
-            }
+            ctx.stroke();
         };
 
-        // Game::Draw 
-        Draw() {
+
+        DrawAsteroid(asteroid) {
+            let ctx = this.Ctx;
+            let i:number = 0;
+
+            let outverts:number[][] = TrasVerts(asteroid.matrix, asteroid.verts);
+            ctx.strokeStyle = 'rgb(255, 255, 255)';
+            ctx.beginPath();
+            ctx.moveTo(outverts[0][0], outverts[0][1]);
+            for (i = 0; i < outverts.length; i++) {
+                ctx.lineTo(outverts[i][0], outverts[i][1]);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        };
+
+        // Game::Draw
+        Draw ():void {
             var ctx = this.Ctx;
 
             // clear last frame
-            ctx.fillStyle = 'rgb(200, 200, 200)';
+            ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-            // Draw Player 
-            ctx.fillStyle = 'rgb(0, 200, 0)';
-            // ctx.fillRect(this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
-            let img = gCache.get(gBox);
-            ctx.drawImage(img, 0, 0, img.width, img.height,
-                this.Player.X, this.Player.Y, this.Player.Width, this.Player.Height);
+            for (let i:number = 0; i < this.Objects.length; i++) {
+                let obj = this.Objects[i];
+                ApplyTransformToObj(obj);
+                obj.outverts = TrasVerts(obj.matrix,obj.verts);
 
-
-            this.Ball.Draw(ctx);
-
-            var bx = 0;
-            var by = 0;
-            var a = null;
-            var hitloc = null;
-            var ballv = 0;
-            var vnew = 0;
-            var balldir = 0;
-            var justBeforeHit = 0;
-            var colBallPos = [0, 0, 0, 0];
-
-            // Draw Field
-            ctx.fillStyle = 'rgb(200, 0, 0)';
-            for (by = 0; by < this.Field.length; by++) {
-                let row = this.Field[by];
-                var y = this.Field0Box.Y + by * this.Field0Box.Height;
-                for (bx = 0; bx < row.length; bx++) {
-                    if (row[bx] == 1) {
-                        var x = this.Field0Box.X + bx * this.Field0Box.Width;
-                        ctx.drawImage(this.BoxCanvas, 0, 0, this.BoxCanvas.width, this.BoxCanvas.height,
-                            x, y, this.Field0Box.Width, this.Field0Box.Height);
-
-                    }
+                if (obj.objtype == "Asteroid") {
+                    this.DrawAsteroid(obj);
+                } else if (obj.objtype == "SpaceShip") {
+                    this.DrawSpaceShip(obj);
                 }
-            }
-
-            this.Ball.Move();
-
-            // did ball hit field
-            var testBox = new Box(0, 0, this.Field0Box.Width, this.Field0Box.Height);
-            // loop backward so I hit the first row first. 
-            for (by = this.Field.length - 1; by >= 0; by--) {
-                let row = this.Field[by];
-                testBox.Y = this.Field0Box.Y + by * this.Field0Box.Height;
-                for (bx = 0; bx < row.length; bx++) {
-                    if (row[bx] == 1) {
-                        testBox.X = this.Field0Box.X + bx * this.Field0Box.Width;
-
-                        let HitLoc = this.Ball.BallCollision(testBox, "Field", LineVsBox);
-                        if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < this.Ball.Speed) {
-                            // Delete the box we hit. 
-                            row[bx] = 0;
-                            this.Ball.BallReflection(testBox, "Field", LineVsBox, HitLoc);
-                            this.Score += 1;
-                        }
-                    }
-                }
-            }
-
-            this.ScoreElement.innerText = "Score: " + this.Score;
-
-            // Check to see if the ball is going out of the world
-            let HitLoc = this.Ball.BallCollision(this.WorldBox, "World", LineVsBoxInside);
-            if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < this.Ball.Speed && HitLoc.Normal[1] !== -1) {
-                this.Ball.BallReflection(this.WorldBox, "World", LineVsBoxInside, HitLoc);
-            }
-
-            // Check to see if the ball is going out of the world
-            HitLoc = this.Ball.BallCollision(this.Player, "Player", LineVsBox);
-            if (HitLoc.IsHit && HitLoc.Time > 0 && HitLoc.Time < this.Ball.Speed) {
-                this.Ball.BallReflection(this.Player, "Player", LineVsBox, HitLoc);
-            }
-
-            this.Player.X += this.PlayerVelocityX;
-            if (this.Player.X + this.Player.Width > this.WorldWidth) {
-                this.Player.X = this.WorldWidth - this.Player.Width;
-            }
-            if (this.Player.X < 0) {
-                this.Player.X = 0;
             }
 
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
-        }
+        };
     }
-
 
     export function newGame() {
         let gGame: Game = null;
@@ -623,37 +304,38 @@ namespace asteroids {
         }
 
         document.addEventListener('keyup', function (event) {
-            if (event.keyCode == 37) {
-                if (gGame !== null) {
-                    gGame.LeftButtonUp();
-                }
-            } else if (event.keyCode == 39) {
-                if (gGame !== null) {
-                    gGame.RightButtonUp();
-                }
-            }
+            // if (event.keyCode == 37) {
+            //     if (gGame !== null) {
+            //         gGame.LeftButtonUp();
+            //     }
+            // } else if (event.keyCode == 39) {
+            //     if (gGame !== null) {
+            //         gGame.RightButtonUp();
+            //     }
+            // }
         });
 
         document.addEventListener('keydown', function (event) {
-            if (event.keyCode == 37) {
-                if (gGame !== null) {
-                    gGame.LeftButtonDown();
-                }
-            } else if (event.keyCode == 39) {
-                if (gGame !== null) {
-                    gGame.RightButtonDown();
-                }
-            } else if (event.keyCode == 32) {
-                if (gGame !== null) {
-                    gGame.ResetField();
-                }
-            }
+            // if (event.keyCode == 37) {
+            //     if (gGame !== null) {
+            //         gGame.LeftButtonDown();
+            //     }
+            // } else if (event.keyCode == 39) {
+            //     if (gGame !== null) {
+            //         gGame.RightButtonDown();
+            //     }
+            // } else if (event.keyCode == 32) {
+            //     if (gGame !== null) {
+            //         gGame.ResetField();
+            //     }
+            // }
         });
 
         function updateFrame() {
             gGame.Draw();
         }
     }
+
 }
 
-asteroids.gCache.onReady(asteroids.newGame);
+window.onload = () => { asteroids.newGame(); }
