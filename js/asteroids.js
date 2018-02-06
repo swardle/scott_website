@@ -87,6 +87,15 @@ var asteroids;
         var t = MakeTrans(obj.pos[0], obj.pos[1]);
         obj.matrix = MatMult(t, MatMult(s, r));
     }
+    var Buttons = /** @class */ (function () {
+        function Buttons() {
+            this.dir = [0, 0];
+            this.fire = 0;
+            this.dir = [0, 0];
+            this.fire = 0;
+        }
+        return Buttons;
+    }());
     var Game = /** @class */ (function () {
         // Game::Game
         function Game(canvas, backcanvas, frontctx, backctx) {
@@ -99,11 +108,12 @@ var asteroids;
             this.FrontCtx = frontctx;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
+            this.ConButtons = new Buttons;
             this.Objects = [];
-            this.AddAsteroid();
-            this.AddAsteroid();
-            this.AddAsteroid();
             this.AddSpaceShip();
+            this.AddAsteroid();
+            this.AddAsteroid();
+            this.AddAsteroid();
         }
         Game.prototype.AddSpaceShip = function () {
             var sizeSpaceShip = 10;
@@ -235,6 +245,8 @@ var asteroids;
             // clear last frame
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
+            this.Objects[0].pos[0] += this.ConButtons.dir[0];
+            this.Objects[0].pos[1] += this.ConButtons.dir[1];
             for (var i = 0; i < this.Objects.length; i++) {
                 var obj = this.Objects[i];
                 ApplyTransformToObj(obj);
@@ -250,6 +262,12 @@ var asteroids;
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
         };
         ;
+        Game.prototype.getButtons = function () {
+            return this.ConButtons;
+        };
+        Game.prototype.setButtons = function (b) {
+            this.ConButtons = b;
+        };
         return Game;
     }());
     function newGame() {
@@ -269,30 +287,46 @@ var asteroids;
             }
         }
         document.addEventListener('keyup', function (event) {
-            // if (event.keyCode == 37) {
-            //     if (gGame !== null) {
-            //         gGame.LeftButtonUp();
-            //     }
-            // } else if (event.keyCode == 39) {
-            //     if (gGame !== null) {
-            //         gGame.RightButtonUp();
-            //     }
-            // }
+            if (gGame !== null) {
+                var b = gGame.getButtons();
+                if (event.keyCode == 37) {
+                    b.dir[0] = 0; // to left
+                }
+                else if (event.keyCode == 38) {
+                    b.dir[1] = 0; // to right
+                }
+                else if (event.keyCode == 39) {
+                    b.dir[0] = 0; // to right
+                }
+                else if (event.keyCode == 40) {
+                    b.dir[1] = 0; // to down
+                }
+                else if (event.keyCode == 32) {
+                    b.fire = 0; // fire
+                }
+                gGame.setButtons(b);
+            }
         });
         document.addEventListener('keydown', function (event) {
-            // if (event.keyCode == 37) {
-            //     if (gGame !== null) {
-            //         gGame.LeftButtonDown();
-            //     }
-            // } else if (event.keyCode == 39) {
-            //     if (gGame !== null) {
-            //         gGame.RightButtonDown();
-            //     }
-            // } else if (event.keyCode == 32) {
-            //     if (gGame !== null) {
-            //         gGame.ResetField();
-            //     }
-            // }
+            if (gGame !== null) {
+                var b = gGame.getButtons();
+                if (event.keyCode == 37) {
+                    b.dir[0] = -1; // to left
+                }
+                else if (event.keyCode == 38) {
+                    b.dir[1] = -1; // to up
+                }
+                else if (event.keyCode == 39) {
+                    b.dir[0] = 1; // to right
+                }
+                else if (event.keyCode == 40) {
+                    b.dir[1] = 1; // to down
+                }
+                else if (event.keyCode == 32) {
+                    b.fire = 1; // fire
+                }
+                gGame.setButtons(b);
+            }
         });
         function updateFrame() {
             gGame.Draw();

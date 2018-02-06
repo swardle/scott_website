@@ -97,6 +97,15 @@ namespace asteroids {
         obj.matrix = MatMult(t, MatMult(s, r));
     }
 
+    class Buttons {
+        public dir: number[] = [0, 0];
+        public fire: number = 0;
+        constructor() {
+            this.dir = [0,0];
+            this.fire = 0;
+        }
+    }
+
     class Game {
         Canvas: HTMLCanvasElement;
         FrontCanvas: HTMLCanvasElement;
@@ -109,6 +118,7 @@ namespace asteroids {
         PlayerVelocityX: number = 0;
         PlayerVelocityY: number = 0;
         Objects: any[] = [];
+        ConButtons: Buttons;
 
         // Game::Game
         constructor(canvas: HTMLCanvasElement, backcanvas: HTMLCanvasElement,
@@ -119,12 +129,13 @@ namespace asteroids {
             this.FrontCtx = frontctx;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
+            this.ConButtons = new Buttons;
 
             this.Objects = [];
-            this.AddAsteroid();
-            this.AddAsteroid();
-            this.AddAsteroid();
             this.AddSpaceShip();
+            this.AddAsteroid();
+            this.AddAsteroid();
+            this.AddAsteroid();
         }
 
         AddSpaceShip(): void {
@@ -166,7 +177,7 @@ namespace asteroids {
             let x: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
             let y: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
             let types: string = "abcd"
-            let t: number = randomInt(0, types.length-1);
+            let t: number = randomInt(0, types.length - 1);
             let r: number = sizeAsteroid / 10.0;
 
             let objs: any = {
@@ -232,9 +243,9 @@ namespace asteroids {
 
         DrawSpaceShip(spaceShip) {
             let ctx = this.Ctx;
-            let i:number = 0;
+            let i: number = 0;
 
-            let outverts:number[][] = TrasVerts(spaceShip.matrix, spaceShip.verts);
+            let outverts: number[][] = TrasVerts(spaceShip.matrix, spaceShip.verts);
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
             ctx.moveTo(outverts[0][0], outverts[0][1]);
@@ -247,9 +258,9 @@ namespace asteroids {
 
         DrawAsteroid(asteroid) {
             let ctx = this.Ctx;
-            let i:number = 0;
+            let i: number = 0;
 
-            let outverts:number[][] = TrasVerts(asteroid.matrix, asteroid.verts);
+            let outverts: number[][] = TrasVerts(asteroid.matrix, asteroid.verts);
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
             ctx.moveTo(outverts[0][0], outverts[0][1]);
@@ -261,17 +272,20 @@ namespace asteroids {
         };
 
         // Game::Draw
-        Draw ():void {
+        Draw(): void {
             var ctx = this.Ctx;
 
             // clear last frame
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-            for (let i:number = 0; i < this.Objects.length; i++) {
+            this.Objects[0].pos[0] += this.ConButtons.dir[0];
+            this.Objects[0].pos[1] += this.ConButtons.dir[1];
+
+            for (let i: number = 0; i < this.Objects.length; i++) {
                 let obj = this.Objects[i];
                 ApplyTransformToObj(obj);
-                obj.outverts = TrasVerts(obj.matrix,obj.verts);
+                obj.outverts = TrasVerts(obj.matrix, obj.verts);
 
                 if (obj.objtype == "Asteroid") {
                     this.DrawAsteroid(obj);
@@ -283,6 +297,14 @@ namespace asteroids {
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
         };
+
+        getButtons(): Buttons {
+            return this.ConButtons;
+        }
+
+        setButtons(b: Buttons): void {
+            this.ConButtons = b;
+        }
     }
 
     export function newGame() {
@@ -304,31 +326,39 @@ namespace asteroids {
         }
 
         document.addEventListener('keyup', function (event) {
-            // if (event.keyCode == 37) {
-            //     if (gGame !== null) {
-            //         gGame.LeftButtonUp();
-            //     }
-            // } else if (event.keyCode == 39) {
-            //     if (gGame !== null) {
-            //         gGame.RightButtonUp();
-            //     }
-            // }
+            if (gGame !== null) {
+                let b: Buttons = gGame.getButtons();
+                if (event.keyCode == 37) {
+                    b.dir[0] = 0; // to left
+                } else if (event.keyCode == 38) {
+                    b.dir[1] = 0; // to right
+                } else if (event.keyCode == 39) {
+                    b.dir[0] = 0; // to right
+                } else if (event.keyCode == 40) {
+                    b.dir[1] = 0; // to down
+                } else if (event.keyCode == 32) {
+                    b.fire = 0; // fire
+                }
+                gGame.setButtons(b);
+            }
         });
 
         document.addEventListener('keydown', function (event) {
-            // if (event.keyCode == 37) {
-            //     if (gGame !== null) {
-            //         gGame.LeftButtonDown();
-            //     }
-            // } else if (event.keyCode == 39) {
-            //     if (gGame !== null) {
-            //         gGame.RightButtonDown();
-            //     }
-            // } else if (event.keyCode == 32) {
-            //     if (gGame !== null) {
-            //         gGame.ResetField();
-            //     }
-            // }
+            if (gGame !== null) {
+                let b: Buttons = gGame.getButtons();
+                if (event.keyCode == 37) {
+                    b.dir[0] = -1; // to left
+                } else if (event.keyCode == 38) {
+                    b.dir[1] = -1; // to up
+                } else if (event.keyCode == 39) {
+                    b.dir[0] = 1; // to right
+                } else if (event.keyCode == 40) {
+                    b.dir[1] = 1; // to down
+                } else if (event.keyCode == 32) {
+                    b.fire = 1; // fire
+                }
+                gGame.setButtons(b);
+            }
         });
 
         function updateFrame() {
