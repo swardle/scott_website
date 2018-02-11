@@ -29,8 +29,8 @@ namespace asteroids {
         return mat;
     }
 
-    function MakeRot(rot: number): number[][] {
-        var rotRad = rot * Math.PI / 180;
+    function MakeRot(rotRad: number): number[][] {
+
         var sin = Math.sin(rotRad);
         var cos = Math.cos(rotRad);
 
@@ -90,18 +90,11 @@ namespace asteroids {
         return outverts;
     }
 
-    function ApplyTransformToObj(obj) {
-        let s: number[][] = MakeScale(obj.scale[0], obj.scale[1]);
-        let r: number[][] = MakeRot(obj.rotation);
-        let t: number[][] = MakeTrans(obj.pos[0], obj.pos[1]);
-        obj.matrix = MatMult(t, MatMult(s, r));
-    }
-
     class Buttons {
         public dir: number[] = [0, 0];
         public fire: number = 0;
         constructor() {
-            this.dir = [0,0];
+            this.dir = [0, 0];
             this.fire = 0;
         }
     }
@@ -115,8 +108,6 @@ namespace asteroids {
         ScreenHeight: number;
         WorldWidth: number;
         WorldHight: number;
-        PlayerVelocityX: number = 0;
-        PlayerVelocityY: number = 0;
         Objects: any[] = [];
         ConButtons: Buttons;
 
@@ -138,12 +129,13 @@ namespace asteroids {
             this.AddAsteroid();
         }
 
+        // game::AddSpaceShip
         AddSpaceShip(): void {
             let sizeSpaceShip: number = 10;
             let x: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
             let y: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            let rot: number = randomInt(0, 359);
             let r: number = sizeSpaceShip / 5.0;
+            let rot: number = randomInt(0, 359);
             let rotRad: number = rot * Math.PI / 180;
             let sin: number = Math.sin(rotRad);
             let cos: number = Math.cos(rotRad);
@@ -166,8 +158,9 @@ namespace asteroids {
                 ],
                 pos: [x, y],
                 scale: [1, 1],
-                rotation: rot,
+                rotation: rotRad,
                 radius: r,
+                speed: 0
             });
         }
 
@@ -178,7 +171,12 @@ namespace asteroids {
             let y: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
             let types: string = "abcd"
             let t: number = randomInt(0, types.length - 1);
+            let s: number = (randomInt(0, 100) / 100.0) * 5;
             let r: number = sizeAsteroid / 10.0;
+            let rot: number = randomInt(0, 359);
+            let rotRad: number = rot * Math.PI / 180;
+            let sin: number = Math.sin(rotRad);
+            let cos: number = Math.cos(rotRad);
 
             let objs: any = {
                 a: [
@@ -231,16 +229,18 @@ namespace asteroids {
                 objtype: "Asteroid",
                 verts: objs[types[t]],
                 matrix: [
-                    [1, 0, x],
-                    [0, 1, y],
+                    [cos, -sin, x],
+                    [sin, cos, y],
                     [0, 0, 1],
                 ],
                 pos: [x, y],
                 scale: [1, 1],
-                rotation: 0,
+                rotation: rotRad,
+                speed: s
             });
         }
 
+        // game::DrawSpaceShip
         DrawSpaceShip(spaceShip) {
             let ctx = this.Ctx;
             let i: number = 0;
@@ -256,6 +256,7 @@ namespace asteroids {
         };
 
 
+        // game::DrawAsteroid
         DrawAsteroid(asteroid) {
             let ctx = this.Ctx;
             let i: number = 0;
@@ -271,6 +272,29 @@ namespace asteroids {
             ctx.stroke();
         };
 
+        ApplyTransformToObj(obj) {
+
+            var rotRad = obj.rotation;
+            var sin = Math.sin(rotRad);
+            var cos = Math.cos(rotRad);
+            let speed = obj.speed;
+            let vel: number[] = [-sin * speed, cos * speed];
+            let pos: number[] = [obj.pos[0], obj.pos[1]];
+            pos[0] += vel[0];
+            pos[1] += vel[1];
+
+            pos[0] = (pos[0] + this.Canvas.width) % this.Canvas.width;
+            pos[1] = (pos[1] + this.Canvas.height) % this.Canvas.height;
+            obj.pos = pos;
+            obj.speed = speed;
+
+            let s: number[][] = MakeScale(obj.scale[0], obj.scale[1]);
+            let r: number[][] = MakeRot(obj.rotation);
+            let t: number[][] = MakeTrans(obj.pos[0], obj.pos[1]);
+            obj.matrix = MatMult(t, MatMult(s, r));
+        }
+
+
         // Game::Draw
         Draw(): void {
             var ctx = this.Ctx;
@@ -279,12 +303,12 @@ namespace asteroids {
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-            this.Objects[0].pos[0] += this.ConButtons.dir[0];
-            this.Objects[0].pos[1] += this.ConButtons.dir[1];
+            this.Objects[0].rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
+            this.Objects[0].speed = this.Objects[0].speed + this.ConButtons.dir[1] * 0.25;
 
             for (let i: number = 0; i < this.Objects.length; i++) {
                 let obj = this.Objects[i];
-                ApplyTransformToObj(obj);
+                this.ApplyTransformToObj(obj);
                 obj.outverts = TrasVerts(obj.matrix, obj.verts);
 
                 if (obj.objtype == "Asteroid") {

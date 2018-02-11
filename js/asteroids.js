@@ -26,8 +26,7 @@ var asteroids;
         ];
         return mat;
     }
-    function MakeRot(rot) {
-        var rotRad = rot * Math.PI / 180;
+    function MakeRot(rotRad) {
         var sin = Math.sin(rotRad);
         var cos = Math.cos(rotRad);
         var mat = [
@@ -81,12 +80,6 @@ var asteroids;
         }
         return outverts;
     }
-    function ApplyTransformToObj(obj) {
-        var s = MakeScale(obj.scale[0], obj.scale[1]);
-        var r = MakeRot(obj.rotation);
-        var t = MakeTrans(obj.pos[0], obj.pos[1]);
-        obj.matrix = MatMult(t, MatMult(s, r));
-    }
     var Buttons = /** @class */ (function () {
         function Buttons() {
             this.dir = [0, 0];
@@ -99,8 +92,6 @@ var asteroids;
     var Game = /** @class */ (function () {
         // Game::Game
         function Game(canvas, backcanvas, frontctx, backctx) {
-            this.PlayerVelocityX = 0;
-            this.PlayerVelocityY = 0;
             this.Objects = [];
             this.Canvas = backcanvas;
             this.FrontCanvas = canvas;
@@ -115,12 +106,13 @@ var asteroids;
             this.AddAsteroid();
             this.AddAsteroid();
         }
+        // game::AddSpaceShip
         Game.prototype.AddSpaceShip = function () {
             var sizeSpaceShip = 10;
             var x = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
             var y = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            var rot = randomInt(0, 359);
             var r = sizeSpaceShip / 5.0;
+            var rot = randomInt(0, 359);
             var rotRad = rot * Math.PI / 180;
             var sin = Math.sin(rotRad);
             var cos = Math.cos(rotRad);
@@ -142,8 +134,9 @@ var asteroids;
                 ],
                 pos: [x, y],
                 scale: [1, 1],
-                rotation: rot,
+                rotation: rotRad,
                 radius: r,
+                speed: 0
             });
         };
         // Game::AddAsteroid
@@ -153,7 +146,12 @@ var asteroids;
             var y = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
             var types = "abcd";
             var t = randomInt(0, types.length - 1);
+            var s = (randomInt(0, 100) / 100.0) * 5;
             var r = sizeAsteroid / 10.0;
+            var rot = randomInt(0, 359);
+            var rotRad = rot * Math.PI / 180;
+            var sin = Math.sin(rotRad);
+            var cos = Math.cos(rotRad);
             var objs = {
                 a: [
                     [r * 0, r * 10],
@@ -203,15 +201,17 @@ var asteroids;
                 objtype: "Asteroid",
                 verts: objs[types[t]],
                 matrix: [
-                    [1, 0, x],
-                    [0, 1, y],
+                    [cos, -sin, x],
+                    [sin, cos, y],
                     [0, 0, 1],
                 ],
                 pos: [x, y],
                 scale: [1, 1],
-                rotation: 0,
+                rotation: rotRad,
+                speed: s
             });
         };
+        // game::DrawSpaceShip
         Game.prototype.DrawSpaceShip = function (spaceShip) {
             var ctx = this.Ctx;
             var i = 0;
@@ -225,6 +225,7 @@ var asteroids;
             ctx.stroke();
         };
         ;
+        // game::DrawAsteroid
         Game.prototype.DrawAsteroid = function (asteroid) {
             var ctx = this.Ctx;
             var i = 0;
@@ -239,17 +240,35 @@ var asteroids;
             ctx.stroke();
         };
         ;
+        Game.prototype.ApplyTransformToObj = function (obj) {
+            var rotRad = obj.rotation;
+            var sin = Math.sin(rotRad);
+            var cos = Math.cos(rotRad);
+            var speed = obj.speed;
+            var vel = [-sin * speed, cos * speed];
+            var pos = [obj.pos[0], obj.pos[1]];
+            pos[0] += vel[0];
+            pos[1] += vel[1];
+            pos[0] = (pos[0] + this.Canvas.width) % this.Canvas.width;
+            pos[1] = (pos[1] + this.Canvas.height) % this.Canvas.height;
+            obj.pos = pos;
+            obj.speed = speed;
+            var s = MakeScale(obj.scale[0], obj.scale[1]);
+            var r = MakeRot(obj.rotation);
+            var t = MakeTrans(obj.pos[0], obj.pos[1]);
+            obj.matrix = MatMult(t, MatMult(s, r));
+        };
         // Game::Draw
         Game.prototype.Draw = function () {
             var ctx = this.Ctx;
             // clear last frame
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
-            this.Objects[0].pos[0] += this.ConButtons.dir[0];
-            this.Objects[0].pos[1] += this.ConButtons.dir[1];
+            this.Objects[0].rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
+            this.Objects[0].speed = this.Objects[0].speed + this.ConButtons.dir[1] * 0.25;
             for (var i = 0; i < this.Objects.length; i++) {
                 var obj = this.Objects[i];
-                ApplyTransformToObj(obj);
+                this.ApplyTransformToObj(obj);
                 obj.outverts = TrasVerts(obj.matrix, obj.verts);
                 if (obj.objtype == "Asteroid") {
                     this.DrawAsteroid(obj);
