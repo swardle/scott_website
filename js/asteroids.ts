@@ -174,6 +174,7 @@ namespace asteroids {
     class Buttons {
         public dir: number[] = [0, 0];
         public fire: number = 0;
+        public start: number = 0;
         constructor() {
         }
     }
@@ -229,16 +230,15 @@ namespace asteroids {
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
-            //this.AddAsteroid(20);
-            //this.AddAsteroid(20);
+            this.Objects.push(this.AddAsteroid(20));
+            this.Objects.push(this.AddAsteroid(20));
         }
 
         // game::AddSpaceShip
         AddSpaceShip() {
-            let sizeSpaceShip: number = 10;
+            let sizeSpaceShip: number = 5;
             let x: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
             let y: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            let r: number = sizeSpaceShip / 5.0;
             let rot: number = randomInt(0, 359);
             let rotRad: number = rot * Math.PI / 180;
             let sin: number = Math.sin(rotRad);
@@ -248,13 +248,13 @@ namespace asteroids {
             return {
                 objtype: "SpaceShip",
                 verts: [
-                    [-5, 5], // left fin
-                    [0, -5], // top nose
-                    [5, 5], // right fin
-                    [4, 3], // right end flame
-                    [-4, 3], // left end flame
-                    [0, 6], // end flame
-                    [4, 3], // left end flame
+                    [-1, 1], // left fin
+                    [0, -1], // top nose
+                    [1, 1], // right fin
+                    [.8, .6], // right end flame
+                    [-.8, .6], // left end flame
+                    [0, 1], // end flame
+                    [.8, .6], // left end flame
                 ],
                 matrix: [
                     [cos, -sin, x],
@@ -262,16 +262,16 @@ namespace asteroids {
                     [0, 0, 1],
                 ],
                 pos: [x, y],
-                scale: [1, 1],
+                scale: [5, 5],
                 rotation: rotRad,
-                radius: r,
-                speed: 0
+                speed: 0,
+                dead: false
             };
         }
 
         // Game::AddAsteroid
         AddAsteroid(default_size: number = 0, default_pos: number[] = []) {
-            let sizetable:number[] = [5, 10, 20];
+            let sizetable: number[] = [5, 10, 20];
             let si: number = randomInt(0, sizetable.length - 1);
             let sizeAsteroid: number = sizetable[si];
             if (default_size !== 0) {
@@ -279,14 +279,13 @@ namespace asteroids {
             }
             let x: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
             let y: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
-            if(default_pos.length !== 0)
-            {
+            if (default_pos.length !== 0) {
                 x = default_pos[0];
                 y = default_pos[1];
             }
             let types: string = "abcd"
             let ty: number = randomInt(0, types.length - 1);
-            let sp: number = (randomInt(0, 100) / 100.0) * 5;
+            let sp: number = (randomInt(30, 100) / 100.0) * 5;
             let rot: number = randomInt(0, 359);
             let rotRad: number = rot * Math.PI / 180;
             let sin: number = Math.sin(rotRad);
@@ -310,7 +309,9 @@ namespace asteroids {
                 pos: [x, y],
                 scale: [sizeAsteroid, sizeAsteroid],
                 rotation: rotRad,
-                speed: sp
+                speed: sp,
+                                dead: false
+
             };
         }
 
@@ -366,6 +367,21 @@ namespace asteroids {
                 }
             }
         }
+        shipVsAsteroids() {
+            let ship = this.Objects[0];
+            for (let j: number = 1; j < this.Objects.length; j++) {
+                let obj = this.Objects[j];
+                if (obj.objtype === "Asteroid") {
+                    // find the disance between ship and asteroid
+                    // is within the asteroid radius + ship radius
+                    let v: number[] = [obj.pos[0] - ship.pos[0], obj.pos[1] - ship.pos[1]];
+                    let vlen: number = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+                    if (vlen < obj.scale[0] + ship.scale[0]) {
+                        ship.dead = true;
+                    }
+                }
+            }
+        }
 
         bulletsVsAsteroids() {
             var ctx = this.Ctx;
@@ -383,11 +399,11 @@ namespace asteroids {
                         // so it should be pill like colision test. 
                         // wrap around also casues a problem.
                         let hits = RayVsBall(b.pos, b.dir, obj.pos, obj.scale[0]);
-                        for (let k:number = 0; k < hits.length; k++) {
+                        for (let k: number = 0; k < hits.length; k++) {
                             let HitLoc = hits[k];
                             if (HitLoc.Time <= b.speed) {
-                                this.Objects.splice(j,1);
-                                if (obj.scale[0] > 5){
+                                this.Objects.splice(j, 1);
+                                if (obj.scale[0] > 5) {
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
@@ -406,7 +422,7 @@ namespace asteroids {
                                 newbullets.push(new Bullet(ColData.NewPos, ColData.dir));
                                 newbullets[newbullets.length - 1].lifetime = b.lifetime;
                                 b.lifetime = 0
-                                */ 
+                                */
                             }
                         }
                     }
@@ -460,29 +476,61 @@ namespace asteroids {
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
-            this.Objects[0].rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
-            this.Objects[0].speed = this.Objects[0].speed + this.ConButtons.dir[1] * 0.25;
-            if (this.ConButtons.fire) {
-                var rotRad = this.Objects[0].rotation;
-                var sin = Math.sin(rotRad);
-                var cos = Math.cos(rotRad);
-                this.Buttets.push(new Bullet(this.Objects[0].pos, [sin, -cos]));
-            }
+            let ship = this.Objects[0];
+            if(!ship.dead)
+            {
+                let el: HTMLElement = document.getElementById("scoreboard");
+                if(el){
+                    el.innerText = "Score:";
+                }
+                ship.rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
+                ship.speed = ship.speed + this.ConButtons.dir[1] * 0.25;
+                if (this.ConButtons.fire) {
+                    var rotRad = ship.rotation;
+                    var sin = Math.sin(rotRad);
+                    var cos = Math.cos(rotRad);
+                    this.Buttets.push(new Bullet(ship.pos, [sin, -cos]));
+                }
 
-            for (let i: number = 0; i < this.Objects.length; i++) {
-                let obj = this.Objects[i];
-                this.ApplyTransformToObj(obj);
-                obj.outverts = TrasVerts(obj.matrix, obj.verts);
+                for (let i: number = 0; i < this.Objects.length; i++) {
+                    let obj = this.Objects[i];
+                    this.ApplyTransformToObj(obj);
+                    obj.outverts = TrasVerts(obj.matrix, obj.verts);
 
-                if (obj.objtype == "Asteroid") {
-                    this.DrawAsteroid(obj);
-                } else if (obj.objtype == "SpaceShip") {
-                    this.DrawSpaceShip(obj);
+                    if (obj.objtype === "Asteroid") {
+                        this.DrawAsteroid(obj);
+                    } else if (obj.objtype === "SpaceShip" && obj.dead === false) {
+                        this.DrawSpaceShip(obj);
+                    }
+                }
+                this.updateBullets();
+                this.drawBullets();
+                this.bulletsVsAsteroids();
+                this.shipVsAsteroids();
+                if (this.ConButtons.start) {
+                    ship.dead = false;
+                    ship.speed = 0;
+                    this.Objects.splice(1, this.Objects.length - 1);
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
                 }
             }
-            this.updateBullets();
-            this.drawBullets();
-            this.bulletsVsAsteroids();
+            else {
+                let el: HTMLElement = document.getElementById("scoreboard");
+                if (el) {
+                    el.innerText = "press s to start";                
+                }
+                if(this.ConButtons.start)
+                {
+                    ship.dead = false;
+                    ship.speed = 0;
+                    this.Objects.splice(1, this.Objects.length-1);
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));                    
+                }
+            }
 
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
@@ -528,6 +576,8 @@ namespace asteroids {
                     b.dir[1] = 0; // to down
                 } else if (event.keyCode == 32) {
                     b.fire = 0; // fire
+                } else if (event.keyCode == 83) {
+                    b.start = 0; // start s key
                 }
                 gGame.setButtons(b);
             }
@@ -546,6 +596,8 @@ namespace asteroids {
                     b.dir[1] = 1; // to down
                 } else if (event.keyCode == 32) {
                     b.fire = 1; // fire
+                } else if (event.keyCode == 83) {
+                    b.start = 1; // start s key
                 }
                 gGame.setButtons(b);
             }

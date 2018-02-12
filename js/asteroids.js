@@ -158,6 +158,7 @@ var asteroids;
         function Buttons() {
             this.dir = [0, 0];
             this.fire = 0;
+            this.start = 0;
         }
         return Buttons;
     }());
@@ -199,15 +200,14 @@ var asteroids;
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
-            //this.AddAsteroid(20);
-            //this.AddAsteroid(20);
+            this.Objects.push(this.AddAsteroid(20));
+            this.Objects.push(this.AddAsteroid(20));
         }
         // game::AddSpaceShip
         Game.prototype.AddSpaceShip = function () {
-            var sizeSpaceShip = 10;
+            var sizeSpaceShip = 5;
             var x = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
             var y = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            var r = sizeSpaceShip / 5.0;
             var rot = randomInt(0, 359);
             var rotRad = rot * Math.PI / 180;
             var sin = Math.sin(rotRad);
@@ -215,13 +215,13 @@ var asteroids;
             return {
                 objtype: "SpaceShip",
                 verts: [
-                    [-5, 5],
-                    [0, -5],
-                    [5, 5],
-                    [4, 3],
-                    [-4, 3],
-                    [0, 6],
-                    [4, 3],
+                    [-1, 1],
+                    [0, -1],
+                    [1, 1],
+                    [.8, .6],
+                    [-.8, .6],
+                    [0, 1],
+                    [.8, .6],
                 ],
                 matrix: [
                     [cos, -sin, x],
@@ -229,10 +229,10 @@ var asteroids;
                     [0, 0, 1],
                 ],
                 pos: [x, y],
-                scale: [1, 1],
+                scale: [5, 5],
                 rotation: rotRad,
-                radius: r,
-                speed: 0
+                speed: 0,
+                dead: false
             };
         };
         // Game::AddAsteroid
@@ -253,7 +253,7 @@ var asteroids;
             }
             var types = "abcd";
             var ty = randomInt(0, types.length - 1);
-            var sp = (randomInt(0, 100) / 100.0) * 5;
+            var sp = (randomInt(30, 100) / 100.0) * 5;
             var rot = randomInt(0, 359);
             var rotRad = rot * Math.PI / 180;
             var sin = Math.sin(rotRad);
@@ -275,7 +275,8 @@ var asteroids;
                 pos: [x, y],
                 scale: [sizeAsteroid, sizeAsteroid],
                 rotation: rotRad,
-                speed: sp
+                speed: sp,
+                dead: false
             };
         };
         // game::DrawSpaceShip
@@ -323,6 +324,21 @@ var asteroids;
                     // wrap around
                     b.pos[0] = (b.pos[0] + width) % width;
                     b.pos[1] = (b.pos[1] + height) % height;
+                }
+            }
+        };
+        Game.prototype.shipVsAsteroids = function () {
+            var ship = this.Objects[0];
+            for (var j = 1; j < this.Objects.length; j++) {
+                var obj = this.Objects[j];
+                if (obj.objtype === "Asteroid") {
+                    // find the disance between ship and asteroid
+                    // is within the asteroid radius + ship radius
+                    var v = [obj.pos[0] - ship.pos[0], obj.pos[1] - ship.pos[1]];
+                    var vlen = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+                    if (vlen < obj.scale[0] + ship.scale[0]) {
+                        ship.dead = true;
+                    }
                 }
             }
         };
@@ -409,28 +425,58 @@ var asteroids;
             // clear last frame
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
-            this.Objects[0].rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
-            this.Objects[0].speed = this.Objects[0].speed + this.ConButtons.dir[1] * 0.25;
-            if (this.ConButtons.fire) {
-                var rotRad = this.Objects[0].rotation;
-                var sin = Math.sin(rotRad);
-                var cos = Math.cos(rotRad);
-                this.Buttets.push(new Bullet(this.Objects[0].pos, [sin, -cos]));
-            }
-            for (var i = 0; i < this.Objects.length; i++) {
-                var obj = this.Objects[i];
-                this.ApplyTransformToObj(obj);
-                obj.outverts = TrasVerts(obj.matrix, obj.verts);
-                if (obj.objtype == "Asteroid") {
-                    this.DrawAsteroid(obj);
+            var ship = this.Objects[0];
+            if (!ship.dead) {
+                var el = document.getElementById("scoreboard");
+                if (el) {
+                    el.innerText = "Score:";
                 }
-                else if (obj.objtype == "SpaceShip") {
-                    this.DrawSpaceShip(obj);
+                ship.rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
+                ship.speed = ship.speed + this.ConButtons.dir[1] * 0.25;
+                if (this.ConButtons.fire) {
+                    var rotRad = ship.rotation;
+                    var sin = Math.sin(rotRad);
+                    var cos = Math.cos(rotRad);
+                    this.Buttets.push(new Bullet(ship.pos, [sin, -cos]));
+                }
+                for (var i = 0; i < this.Objects.length; i++) {
+                    var obj = this.Objects[i];
+                    this.ApplyTransformToObj(obj);
+                    obj.outverts = TrasVerts(obj.matrix, obj.verts);
+                    if (obj.objtype === "Asteroid") {
+                        this.DrawAsteroid(obj);
+                    }
+                    else if (obj.objtype === "SpaceShip" && obj.dead === false) {
+                        this.DrawSpaceShip(obj);
+                    }
+                }
+                this.updateBullets();
+                this.drawBullets();
+                this.bulletsVsAsteroids();
+                this.shipVsAsteroids();
+                if (this.ConButtons.start) {
+                    ship.dead = false;
+                    ship.speed = 0;
+                    this.Objects.splice(1, this.Objects.length - 1);
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
                 }
             }
-            this.updateBullets();
-            this.drawBullets();
-            this.bulletsVsAsteroids();
+            else {
+                var el = document.getElementById("scoreboard");
+                if (el) {
+                    el.innerText = "press s to start";
+                }
+                if (this.ConButtons.start) {
+                    ship.dead = false;
+                    ship.speed = 0;
+                    this.Objects.splice(1, this.Objects.length - 1);
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
+                    this.Objects.push(this.AddAsteroid(20));
+                }
+            }
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
         };
@@ -477,6 +523,9 @@ var asteroids;
                 else if (event.keyCode == 32) {
                     b.fire = 0; // fire
                 }
+                else if (event.keyCode == 83) {
+                    b.start = 0; // start s key
+                }
                 gGame.setButtons(b);
             }
         });
@@ -497,6 +546,9 @@ var asteroids;
                 }
                 else if (event.keyCode == 32) {
                     b.fire = 1; // fire
+                }
+                else if (event.keyCode == 83) {
+                    b.start = 1; // start s key
                 }
                 gGame.setButtons(b);
             }
