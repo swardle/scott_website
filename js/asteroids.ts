@@ -286,17 +286,30 @@ namespace asteroids {
 
         // Game::AddAsteroid
         AddAsteroid(default_size: number = 0, default_pos: number[] = []) {
+            let ship = this.Objects[0];
             let sizetable: number[] = [5, 10, 20];
             let si: number = randomInt(0, sizetable.length - 1);
             let sizeAsteroid: number = sizetable[si];
             if (default_size !== 0) {
                 sizeAsteroid = default_size;
             }
-            let x: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
-            let y: number = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+            let x: number;
+            let y: number;
             if (default_pos.length !== 0) {
                 x = default_pos[0];
                 y = default_pos[1];
+            }
+            else{
+                while (1) {
+                    x = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+                    y = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+                    let v: number[] = [x - ship.pos[0], y - ship.pos[1]];
+                    let vlen: number = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+                    // at least 100 pix away.
+                    if (vlen > sizeAsteroid + ship.scale[0] + 100) {
+                        break;
+                    }
+                }
             }
             let types: string = "abcd"
             let ty: number = randomInt(0, types.length - 1);

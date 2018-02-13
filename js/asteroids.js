@@ -249,17 +249,30 @@ var asteroids;
         Game.prototype.AddAsteroid = function (default_size, default_pos) {
             if (default_size === void 0) { default_size = 0; }
             if (default_pos === void 0) { default_pos = []; }
+            var ship = this.Objects[0];
             var sizetable = [5, 10, 20];
             var si = randomInt(0, sizetable.length - 1);
             var sizeAsteroid = sizetable[si];
             if (default_size !== 0) {
                 sizeAsteroid = default_size;
             }
-            var x = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
-            var y = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+            var x;
+            var y;
             if (default_pos.length !== 0) {
                 x = default_pos[0];
                 y = default_pos[1];
+            }
+            else {
+                while (1) {
+                    x = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+                    y = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
+                    var v = [x - ship.pos[0], y - ship.pos[1]];
+                    var vlen = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+                    // at least 100 pix away.
+                    if (vlen > sizeAsteroid + ship.scale[0] + 100) {
+                        break;
+                    }
+                }
             }
             var types = "abcd";
             var ty = randomInt(0, types.length - 1);
