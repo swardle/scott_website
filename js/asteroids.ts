@@ -214,7 +214,9 @@ namespace asteroids {
         WorldHight: number;
         Objects: any[] = [];
         ConButtons: Buttons;
-        Buttets: Bullet[] = [];
+        Buttets: Bullet[];
+        Score: number;
+        Level: number;
 
         // Game::Game
         constructor(canvas: HTMLCanvasElement, backcanvas: HTMLCanvasElement,
@@ -225,13 +227,26 @@ namespace asteroids {
             this.FrontCtx = frontctx;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
-            this.ConButtons = new Buttons;
+            this.reset();
+        }
 
+        reset(reset_type:string = "")
+        {
+            this.ConButtons = new Buttons;
+            this.Buttets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
+            if(reset_type === "level_end")
+            {
+
+            }
+            else{
+                this.Score = 0;
+                this.Level = 0;
+            }
         }
 
         // game::AddSpaceShip
@@ -310,7 +325,7 @@ namespace asteroids {
                 scale: [sizeAsteroid, sizeAsteroid],
                 rotation: rotRad,
                 speed: sp,
-                                dead: false
+                dead: false
 
             };
         }
@@ -402,6 +417,7 @@ namespace asteroids {
                         for (let k: number = 0; k < hits.length; k++) {
                             let HitLoc = hits[k];
                             if (HitLoc.Time <= b.speed) {
+                                this.Score += 1;
                                 this.Objects.splice(j, 1);
                                 if (obj.scale[0] > 5) {
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
@@ -477,11 +493,10 @@ namespace asteroids {
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
 
             let ship = this.Objects[0];
-            if(!ship.dead)
-            {
+            if (!ship.dead && this.Objects.length > 1) {
                 let el: HTMLElement = document.getElementById("scoreboard");
-                if(el){
-                    el.innerText = "Score:";
+                if (el) {
+                    el.innerText = "Score: "+this.Score+" Level: " + this.Level + "\n";
                 }
                 ship.rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
                 ship.speed = ship.speed + this.ConButtons.dir[1] * 0.25;
@@ -516,20 +531,31 @@ namespace asteroids {
                     this.Objects.push(this.AddAsteroid(20));
                 }
             }
-            else {
+            else if (ship.dead && this.Objects.length > 1) {
                 let el: HTMLElement = document.getElementById("scoreboard");
                 if (el) {
-                    el.innerText = "press s to start";                
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +                    
+                    "press s to start";
                 }
-                if(this.ConButtons.start)
-                {
+                if (this.ConButtons.start) {
+                    this.reset();
+                    ship = this.Objects[0];
                     ship.dead = false;
-                    ship.speed = 0;
-                    this.Objects.splice(1, this.Objects.length-1);
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));                    
                 }
+            }
+            else if (this.Objects.length <= 1)
+            {
+                let el: HTMLElement = document.getElementById("scoreboard");
+                if (el) {
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +
+                    "level over press s to start next level";
+                }
+                if (this.ConButtons.start) {
+                    this.Level += 1;
+                    this.reset("level_end");
+                    ship = this.Objects[0];
+                    ship.dead = false;
+                }                
             }
 
             //render the buffered canvas onto the original canvas element

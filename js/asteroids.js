@@ -189,20 +189,30 @@ var asteroids;
         // Game::Game
         function Game(canvas, backcanvas, frontctx, backctx) {
             this.Objects = [];
-            this.Buttets = [];
             this.Canvas = backcanvas;
             this.FrontCanvas = canvas;
             this.Ctx = backctx;
             this.FrontCtx = frontctx;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
+            this.reset();
+        }
+        Game.prototype.reset = function (reset_type) {
+            if (reset_type === void 0) { reset_type = ""; }
             this.ConButtons = new Buttons;
+            this.Buttets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
-        }
+            if (reset_type === "level_end") {
+            }
+            else {
+                this.Score = 0;
+                this.Level = 0;
+            }
+        };
         // game::AddSpaceShip
         Game.prototype.AddSpaceShip = function () {
             var sizeSpaceShip = 5;
@@ -361,6 +371,7 @@ var asteroids;
                         for (var k = 0; k < hits.length; k++) {
                             var HitLoc = hits[k];
                             if (HitLoc.Time <= b.speed) {
+                                this.Score += 1;
                                 this.Objects.splice(j, 1);
                                 if (obj.scale[0] > 5) {
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
@@ -426,10 +437,10 @@ var asteroids;
             ctx.fillStyle = 'rgb(100, 100, 100)';
             ctx.fillRect(0, 0, this.Canvas.width, this.Canvas.height);
             var ship = this.Objects[0];
-            if (!ship.dead) {
+            if (!ship.dead && this.Objects.length > 1) {
                 var el = document.getElementById("scoreboard");
                 if (el) {
-                    el.innerText = "Score:";
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n";
                 }
                 ship.rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
                 ship.speed = ship.speed + this.ConButtons.dir[1] * 0.25;
@@ -463,18 +474,29 @@ var asteroids;
                     this.Objects.push(this.AddAsteroid(20));
                 }
             }
-            else {
+            else if (ship.dead && this.Objects.length > 1) {
                 var el = document.getElementById("scoreboard");
                 if (el) {
-                    el.innerText = "press s to start";
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +
+                        "press s to start";
                 }
                 if (this.ConButtons.start) {
+                    this.reset();
+                    ship = this.Objects[0];
                     ship.dead = false;
-                    ship.speed = 0;
-                    this.Objects.splice(1, this.Objects.length - 1);
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));
+                }
+            }
+            else if (this.Objects.length <= 1) {
+                var el = document.getElementById("scoreboard");
+                if (el) {
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +
+                        "level over press s to start next level";
+                }
+                if (this.ConButtons.start) {
+                    this.Level += 1;
+                    this.reset("level_end");
+                    ship = this.Objects[0];
+                    ship.dead = false;
                 }
             }
             //render the buffered canvas onto the original canvas element
