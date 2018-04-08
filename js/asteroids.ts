@@ -115,8 +115,11 @@ namespace asteroids {
         return llen;
     }
 
-    function Bounce(aCenter: number[], aMass: number, aMoveVec: number[], bCenter: number[], bMass: number, bMoveVec: number[])
-    {
+    class BouncedVelocities {
+        constructor(public avec: number[], public bvec: number[], ) { }
+    }
+    function Bounce(aCenter: number[], aMass: number, aMoveVec: number[], 
+        bCenter: number[], bMass: number, bMoveVec: number[]): BouncedVelocities {
         // First, find the normalized vector n from the center of 
         // circle1 to the center of circle2
         let n: number[] = VectorSub(aCenter, bCenter);
@@ -132,27 +135,31 @@ namespace asteroids {
         // optimizedP =  2(a1 - a2)
         //              -----------
         //                m1 + m2
-        let optimizedP:number = (2.0 * (a1 - a2)) / (aMass + bMass);
+        let optimizedP: number = (2.0 * (a1 - a2)) / (aMass + bMass);
 
         // Calculate amv', the new movement vector of circle a
         // amv' = aMoveVec - optimizedP * m2 * n
         let amvp: number[] = [
-            aMoveVec[0] - optimizedP * bMass * n[0], 
+            aMoveVec[0] - optimizedP * bMass * n[0],
             aMoveVec[1] - optimizedP * bMass * n[1]
         ];
 
         // Calculate bmv', the new movement vector of circle1
-        // bmv' = bMoveVec - optimizedP * m2 * n
+        // bmv' = bMoveVec + optimizedP * m1 * n
         let bmvp: number[] = [
-            bMoveVec[0] - optimizedP * bMass * n[0],
-            bMoveVec[1] - optimizedP * bMass * n[1]
+            bMoveVec[0] + optimizedP * aMass * n[0],
+            bMoveVec[1] + optimizedP * aMass * n[1]
         ];
 
         // return the updated movement vectors 
-        return [amvp,bmvp];
+        return new BouncedVelocities(amvp, bmvp);
     }
 
-    function BallvBall(aCenter: number[], aRadius: number, aMoveVecParam: number[], bCenter: number[], bRadius: number, bMoveVecParam: number[]) {
+    class Hit {
+        constructor(public isHit: boolean, public time: number) { }
+    };
+
+    function BallvBall(aCenter: number[], aRadius: number, aMoveVecParam: number[], bCenter: number[], bRadius: number, bMoveVecParam: number[]): Hit {
         // find the relative movment between a and b.  
         // make it so b is not moving. 
         let aMoveVec: number[] = VectorSub(aMoveVecParam, bMoveVecParam);
@@ -169,7 +176,7 @@ namespace asteroids {
         let sumRadii: number = (bRadius + aRadius);
         dist -= sumRadii;
         if (Magnitude(aMoveVec) < dist) {
-            return [false, 0.0];
+            return new Hit(false, 0.0);
         }
 
         // Normalize the aMoveVec
@@ -187,7 +194,7 @@ namespace asteroids {
         // bCenter - a.aCenter that or equal to 0, 
         // A isn't isn't moving towards B
         if (D <= 0) {
-            return [false, 0.0];
+            return new Hit(false, 0.0);
         }
         // Find the length of the vector C
         let lengthC: number = Magnitude(C);
@@ -199,7 +206,7 @@ namespace asteroids {
         // way they are going collide
         let sumRadiiSquared: number = sumRadii * sumRadii;
         if (F >= sumRadiiSquared) {
-            return [false, 0.0];
+            return new Hit(false, 0.0);
         }
 
         // We now have F and sumRadii, two sides of a right triangle. 
@@ -211,7 +218,7 @@ namespace asteroids {
         // Better to check now than perform a square root of a 
         // negative number. 
         if (T < 0) {
-            return [false, 0.0];
+            return new Hit(false, 0.0);
         }
 
         // Therefore the distance the circle has to travel along 
@@ -225,12 +232,12 @@ namespace asteroids {
         // to touch B is not greater than the magnitude of the 
         // movement vector. 
         if (mag < distance) {
-            return [false, 0.0];
+            return new Hit(false, 0.0);
         }
 
         // return distance / mag or the time of colision
         let t: number = distance / mag;
-        return [false, t];
+        return new Hit(true, t);
     }
 
 
@@ -392,13 +399,13 @@ namespace asteroids {
             return {
                 objtype: "SpaceShip",
                 verts: [
-                    [-1, 1], // left fin
-                    [0, -1], // top nose
-                    [1, 1], // right fin
-                    [.8, .6], // right end flame
-                    [-.8, .6], // left end flame
-                    [0, 1], // end flame
-                    [.8, .6], // left end flame
+                    [-1, 1], // top fin
+                    [1, 0], // nose
+                    [-1, -1], // bottom fin
+                    [-.8, -.6], // bottom end flame
+                    [-.8, .6], // top end flame
+                    [-1, 0], // end flame
+                    [-.8, .6], // top end flame
                 ],
                 matrix: [
                     [cos, -sin, x],
@@ -442,7 +449,7 @@ namespace asteroids {
             }
             let types: string = "abcd"
             let ty: number = randomInt(0, types.length - 1);
-            let sp: number = (randomInt(30, 100) / 100.0) * 5;
+            let sp: number = (randomInt(30, 100) / 100.0) * 1;
             let rot: number = randomInt(0, 359);
             let rotRad: number = rot * Math.PI / 180;
             let sin: number = Math.sin(rotRad);
@@ -467,7 +474,8 @@ namespace asteroids {
                 scale: [sizeAsteroid, sizeAsteroid],
                 rotation: rotRad,
                 speed: sp,
-                dead: false
+                dead: false,
+                hitpoints: sizeAsteroid
 
             };
         }
@@ -492,6 +500,16 @@ namespace asteroids {
         DrawAsteroid(asteroid) {
             let ctx = this.Ctx;
             let i: number = 0;
+
+            // Draw as circle
+            /*
+            let outverts: number[][] = TrasVerts(asteroid.matrix, [[0.0, 0.0]]);
+            ctx.strokeStyle = 'rgb(255, 255, 255)';
+            ctx.beginPath();
+            ctx.arc(outverts[0][0], outverts[0][1], asteroid.scale[0], 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.stroke();
+            */
 
             let outverts: number[][] = TrasVerts(asteroid.matrix, asteroid.verts);
             ctx.strokeStyle = 'rgb(255, 255, 255)';
@@ -542,51 +560,88 @@ namespace asteroids {
 
         bulletsVsAsteroids() {
             var ctx = this.Ctx;
-            //let newbullets:Bullet[] = [];
+            let newbullets: Bullet[] = [];
             let newobjs = []
             // Test bullets vs objtype = Asteroid
             for (let i: number = 0; i < this.Bullets.length; i++) {
                 let b: Bullet = this.Bullets[i];
+                let bvec = [b.dir[0] * b.speed, b.dir[1] * b.speed];
                 for (let j: number = 0; j < this.Objects.length; j++) {
                     let obj = this.Objects[j];
                     if (obj.objtype === "Asteroid") {
-                        // probably a bug here some times ray get inside asteroid
-                        // should be a polygon test anyways. 
-                        // I think the problem is the asteroid is moving forward. 
-                        // so it should be pill like colision test. 
-                        // wrap around also casues a problem.
-                        let hits = RayVsBall(b.pos, b.dir, obj.pos, obj.scale[0]);
-                        for (let k: number = 0; k < hits.length; k++) {
-                            let HitLoc = hits[k];
-                            if (HitLoc.Time <= b.speed) {
-                                this.Score += 1;
+                        let rotRad = obj.rotation;
+                        let sin = Math.sin(rotRad);
+                        let cos = Math.cos(rotRad);
+                        let speed = obj.speed;
+                        let objvec: number[] = [cos * speed, sin * speed];                        
+                        let hit: Hit = BallvBall(
+                            b.pos, 1, bvec,
+                            obj.pos, obj.scale[0], objvec);
+                        if (hit.isHit === true) {
+                            let HitLocBullet = [b.pos[0] + b.dir[0]* b.speed * hit.time,
+                                b.pos[1] + b.dir[1] * b.speed * hit.time];
+                            let HitLocObj = [obj.pos[0] + objvec[0] * hit.time,
+                                obj.pos[1] + objvec[1] * hit.time];
+                            this.Score += 1;
+                            obj.hitpoints -= 1;
+                            if (obj.hitpoints === 0)
+                            {
                                 this.Objects.splice(j, 1);
                                 if (obj.scale[0] > 5) {
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                 }
-                                b.lifetime = 0
-
-                                // fun boncing bullets tests. 
-                                /*
-                                let ColData = LineReflection(b, HitLoc);
-                                ctx.strokeStyle = 'rgb(200, 200, 0)';
-                                ctx.beginPath();
-                                ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
-                                ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
-                                ctx.stroke();
-
-                                newbullets.push(new Bullet(ColData.NewPos, ColData.dir));
-                                newbullets[newbullets.length - 1].lifetime = b.lifetime;
-                                b.lifetime = 0
-                                */
                             }
+                            
+                            let bv: BouncedVelocities = Bounce(
+                                b.pos, 2, bvec, 
+                                obj.pos, obj.scale[0], objvec);
+                            let newbulletpos = [HitLocBullet[0] + bv.avec[0], HitLocBullet[1] + bv.avec[1]];
+                            let objrot = Math.atan2(bv.bvec[1], bv.bvec[0]);
+                            let objspeed = Magnitude(bv.bvec);
+                            obj.pos = HitLocObj;
+                            obj.rotation = objrot;
+                            obj.speed = objspeed;
+                            ctx.strokeStyle = 'rgb(0, 200, 0)';
+                            ctx.beginPath();
+                            ctx.moveTo(b.pos[0], b.pos[1]);
+                            ctx.lineTo(HitLocBullet[0], HitLocBullet[1]);
+                            ctx.lineTo(newbulletpos[0], newbulletpos[1]);
+                            ctx.stroke();
+
+                            ctx.strokeStyle = 'rgb(255, 0, 0)';
+                            ctx.beginPath();
+                            ctx.arc(HitLocBullet[0], HitLocBullet[1], 1, 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+
+                            ctx.strokeStyle = 'rgb(255, 0, 0)';
+                            ctx.beginPath();
+                            ctx.arc(HitLocObj[0], HitLocObj[1], obj.scale[0], 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+                            
+                            ctx.strokeStyle = 'rgb(0, 0, 255)';
+                            ctx.beginPath();
+                            ctx.arc(b.pos[0], b.pos[1], 1, 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+
+                            ctx.strokeStyle = 'rgb(255, 255, 0)';
+                            ctx.beginPath();
+                            ctx.arc(obj.pos[0], obj.pos[1], obj.scale[0], 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+
+                            newbullets.push(new Bullet(newbulletpos, Normalize(bv.avec)));
+                            newbullets[newbullets.length - 1].lifetime = b.lifetime;
+                            b.lifetime = 0;
                         }
                     }
                 }
             }
-            //this.Bullets = this.Bullets.concat(newbullets);
+            this.Bullets = this.Bullets.concat(newbullets);
             this.Objects = this.Objects.concat(newobjs);
         }
 
@@ -596,8 +651,8 @@ namespace asteroids {
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
             for (let b of this.Bullets) {
-                ctx.moveTo(b.pos[0], b.pos[1]);
-                ctx.lineTo(b.pos[0] + b.dir[0] * b.speed, b.pos[1] + b.dir[1] * b.speed);
+                ctx.moveTo(b.pos[0] - b.dir[0] * b.speed, b.pos[1] - b.dir[1] * b.speed);
+                ctx.lineTo(b.pos[0], b.pos[1]);
             }
             ctx.closePath();
             ctx.stroke();
@@ -608,8 +663,9 @@ namespace asteroids {
             var rotRad = obj.rotation;
             var sin = Math.sin(rotRad);
             var cos = Math.cos(rotRad);
+            obj.speed *= 1.0 - 0.01;
             let speed = obj.speed;
-            let vel: number[] = [-sin * speed, cos * speed];
+            let vel: number[] = [cos * speed, sin * speed];
             let pos: number[] = [obj.pos[0], obj.pos[1]];
             pos[0] += vel[0];
             pos[1] += vel[1];
@@ -646,7 +702,7 @@ namespace asteroids {
                     var rotRad = ship.rotation;
                     var sin = Math.sin(rotRad);
                     var cos = Math.cos(rotRad);
-                    this.Bullets.push(new Bullet(ship.pos, [sin, -cos]));
+                    this.Bullets.push(new Bullet(ship.pos, [cos, sin]));
                 }
 
                 for (let i: number = 0; i < this.Objects.length; i++) {
@@ -736,7 +792,7 @@ namespace asteroids {
                 if (event.keyCode == 37) {
                     b.dir[0] = 0; // to left
                 } else if (event.keyCode == 38) {
-                    b.dir[1] = 0; // to right
+                    b.dir[1] = 0; // to up
                 } else if (event.keyCode == 39) {
                     b.dir[0] = 0; // to right
                 } else if (event.keyCode == 40) {
@@ -756,11 +812,11 @@ namespace asteroids {
                 if (event.keyCode == 37) {
                     b.dir[0] = -1; // to left
                 } else if (event.keyCode == 38) {
-                    b.dir[1] = -1; // to up
+                    b.dir[1] = 1; // to up
                 } else if (event.keyCode == 39) {
                     b.dir[0] = 1; // to right
                 } else if (event.keyCode == 40) {
-                    b.dir[1] = 1; // to down
+                    b.dir[1] = -1; // to down
                 } else if (event.keyCode == 32) {
                     b.fire = 1; // fire
                 } else if (event.keyCode == 83) {

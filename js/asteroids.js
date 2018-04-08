@@ -94,6 +94,130 @@ var asteroids;
         }
         return [x0, x1];
     }
+    function Distance(a, b) {
+        var l = [0, 0];
+        l[0] = b[0] - a[0];
+        l[1] = b[1] - a[1];
+        var llen = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
+        return llen;
+    }
+    function Magnitude(l) {
+        var llen = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
+        return llen;
+    }
+    var BouncedVelocities = /** @class */ (function () {
+        function BouncedVelocities(avec, bvec) {
+            this.avec = avec;
+            this.bvec = bvec;
+        }
+        return BouncedVelocities;
+    }());
+    function Bounce(aCenter, aMass, aMoveVec, bCenter, bMass, bMoveVec) {
+        // First, find the normalized vector n from the center of 
+        // circle1 to the center of circle2
+        var n = VectorSub(aCenter, bCenter);
+        n = Normalize(n);
+        // Find the length of the component of each of the movement
+        // vectors along n. 
+        // a1 = aMoveVec . n
+        // a2 = bMoveVec . n
+        var a1 = Dot(aMoveVec, n);
+        var a2 = Dot(bMoveVec, n);
+        // Using the optimized version, 
+        // optimizedP =  2(a1 - a2)
+        //              -----------
+        //                m1 + m2
+        var optimizedP = (2.0 * (a1 - a2)) / (aMass + bMass);
+        // Calculate amv', the new movement vector of circle a
+        // amv' = aMoveVec - optimizedP * m2 * n
+        var amvp = [
+            aMoveVec[0] - optimizedP * bMass * n[0],
+            aMoveVec[1] - optimizedP * bMass * n[1]
+        ];
+        // Calculate bmv', the new movement vector of circle1
+        // bmv' = bMoveVec + optimizedP * m1 * n
+        var bmvp = [
+            bMoveVec[0] + optimizedP * aMass * n[0],
+            bMoveVec[1] + optimizedP * aMass * n[1]
+        ];
+        // return the updated movement vectors 
+        return new BouncedVelocities(amvp, bmvp);
+    }
+    var Hit = /** @class */ (function () {
+        function Hit(isHit, time) {
+            this.isHit = isHit;
+            this.time = time;
+        }
+        return Hit;
+    }());
+    ;
+    function BallvBall(aCenter, aRadius, aMoveVecParam, bCenter, bRadius, bMoveVecParam) {
+        // find the relative movment between a and b.  
+        // make it so b is not moving. 
+        var aMoveVec = VectorSub(aMoveVecParam, bMoveVecParam);
+        return BallvBallStationary(aCenter, aRadius, aMoveVec, bCenter, bRadius);
+    }
+    function BallvBallStationary(aCenter, aRadius, aMoveVecParam, bCenter, bRadius) {
+        // make a copy of this vector
+        var aMoveVec = aMoveVecParam.slice();
+        // Early Escape test: if the length of the aMoveVec is less
+        // than distance between the centers of these circles minus 
+        // their radii, there's no way they can hit. 
+        var dist = Distance(aCenter, bCenter);
+        var sumRadii = (bRadius + aRadius);
+        dist -= sumRadii;
+        if (Magnitude(aMoveVec) < dist) {
+            return new Hit(false, 0.0);
+        }
+        // Normalize the aMoveVec
+        var N = Normalize(aMoveVec);
+        // Find C, the vector from the center of the moving 
+        // circle A to the center of B
+        var C = VectorSub(bCenter, aCenter);
+        // D = N . C = ||C|| * cos(angle between N and C)
+        var D = Dot(N, C);
+        // Another early escape: Make sure that A is moving 
+        // towards B! If the dot product between the aMoveVec and 
+        // bCenter - a.aCenter that or equal to 0, 
+        // A isn't isn't moving towards B
+        if (D <= 0) {
+            return new Hit(false, 0.0);
+        }
+        // Find the length of the vector C
+        var lengthC = Magnitude(C);
+        var F = (lengthC * lengthC) - (D * D);
+        // Escape test: if the closest that A will get to B 
+        // is more than the sum of their radii, there's no 
+        // way they are going collide
+        var sumRadiiSquared = sumRadii * sumRadii;
+        if (F >= sumRadiiSquared) {
+            return new Hit(false, 0.0);
+        }
+        // We now have F and sumRadii, two sides of a right triangle. 
+        // Use these to find the third side, sqrt(T)
+        var T = sumRadiiSquared - F;
+        // If there is no such right triangle with sides length of 
+        // sumRadii and sqrt(f), T will probably be less than 0. 
+        // Better to check now than perform a square root of a 
+        // negative number. 
+        if (T < 0) {
+            return new Hit(false, 0.0);
+        }
+        // Therefore the distance the circle has to travel along 
+        // aMoveVec is D - sqrt(T)
+        var distance = D - Math.sqrt(T);
+        // Get the magnitude of the movement vector
+        var mag = Magnitude(aMoveVec);
+        // Finally, make sure that the distance A has to move 
+        // to touch B is not greater than the magnitude of the 
+        // movement vector. 
+        if (mag < distance) {
+            return new Hit(false, 0.0);
+        }
+        // return distance / mag or the time of colision
+        var t = distance / mag;
+        return new Hit(true, t);
+    }
     // Line a vs ball b
     // {IsHit=false, Normal=side, Time=t}
     // Circle: abs(x-c)^2 = r^2
@@ -200,7 +324,7 @@ var asteroids;
         Game.prototype.reset = function (reset_type) {
             if (reset_type === void 0) { reset_type = ""; }
             this.ConButtons = new Buttons;
-            this.Buttets = [];
+            this.Bullets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
@@ -226,12 +350,12 @@ var asteroids;
                 objtype: "SpaceShip",
                 verts: [
                     [-1, 1],
-                    [0, -1],
-                    [1, 1],
-                    [.8, .6],
+                    [1, 0],
+                    [-1, -1],
+                    [-.8, -.6],
                     [-.8, .6],
-                    [0, 1],
-                    [.8, .6],
+                    [-1, 0],
+                    [-.8, .6],
                 ],
                 matrix: [
                     [cos, -sin, x],
@@ -276,7 +400,7 @@ var asteroids;
             }
             var types = "abcd";
             var ty = randomInt(0, types.length - 1);
-            var sp = (randomInt(30, 100) / 100.0) * 5;
+            var sp = (randomInt(30, 100) / 100.0) * 1;
             var rot = randomInt(0, 359);
             var rotRad = rot * Math.PI / 180;
             var sin = Math.sin(rotRad);
@@ -299,7 +423,8 @@ var asteroids;
                 scale: [sizeAsteroid, sizeAsteroid],
                 rotation: rotRad,
                 speed: sp,
-                dead: false
+                dead: false,
+                hitpoints: sizeAsteroid
             };
         };
         // game::DrawSpaceShip
@@ -320,6 +445,15 @@ var asteroids;
         Game.prototype.DrawAsteroid = function (asteroid) {
             var ctx = this.Ctx;
             var i = 0;
+            // Draw as circle
+            /*
+            let outverts: number[][] = TrasVerts(asteroid.matrix, [[0.0, 0.0]]);
+            ctx.strokeStyle = 'rgb(255, 255, 255)';
+            ctx.beginPath();
+            ctx.arc(outverts[0][0], outverts[0][1], asteroid.scale[0], 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.stroke();
+            */
             var outverts = TrasVerts(asteroid.matrix, asteroid.verts);
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
@@ -335,11 +469,11 @@ var asteroids;
             var width = this.Canvas.width;
             var height = this.Canvas.height;
             // move bullets
-            for (var i = 0; i < this.Buttets.length; i++) {
-                var b = this.Buttets[i];
+            for (var i = 0; i < this.Bullets.length; i++) {
+                var b = this.Bullets[i];
                 b.lifetime -= 1;
                 if (b.lifetime < 0) {
-                    this.Buttets.splice(i, 1);
+                    this.Bullets.splice(i, 1);
                 }
                 else {
                     b.pos[0] += b.dir[0] * b.speed;
@@ -367,60 +501,87 @@ var asteroids;
         };
         Game.prototype.bulletsVsAsteroids = function () {
             var ctx = this.Ctx;
-            //let newbullets:Bullet[] = [];
+            var newbullets = [];
             var newobjs = [];
             // Test bullets vs objtype = Asteroid
-            for (var i = 0; i < this.Buttets.length; i++) {
-                var b = this.Buttets[i];
+            for (var i = 0; i < this.Bullets.length; i++) {
+                var b = this.Bullets[i];
+                var bvec = [b.dir[0] * b.speed, b.dir[1] * b.speed];
                 for (var j = 0; j < this.Objects.length; j++) {
                     var obj = this.Objects[j];
                     if (obj.objtype === "Asteroid") {
-                        // probably a bug here some times ray get inside asteroid
-                        // should be a polygon test anyways. 
-                        // I think the problem is the asteroid is moving forward. 
-                        // so it should be pill like colision test. 
-                        // wrap around also casues a problem.
-                        var hits = RayVsBall(b.pos, b.dir, obj.pos, obj.scale[0]);
-                        for (var k = 0; k < hits.length; k++) {
-                            var HitLoc = hits[k];
-                            if (HitLoc.Time <= b.speed) {
-                                this.Score += 1;
+                        var rotRad = obj.rotation;
+                        var sin = Math.sin(rotRad);
+                        var cos = Math.cos(rotRad);
+                        var speed = obj.speed;
+                        var objvec = [cos * speed, sin * speed];
+                        var hit = BallvBall(b.pos, 1, bvec, obj.pos, obj.scale[0], objvec);
+                        if (hit.isHit === true) {
+                            var HitLocBullet = [b.pos[0] + b.dir[0] * b.speed * hit.time,
+                                b.pos[1] + b.dir[1] * b.speed * hit.time];
+                            var HitLocObj = [obj.pos[0] + objvec[0] * hit.time,
+                                obj.pos[1] + objvec[1] * hit.time];
+                            this.Score += 1;
+                            obj.hitpoints -= 1;
+                            if (obj.hitpoints === 0) {
                                 this.Objects.splice(j, 1);
                                 if (obj.scale[0] > 5) {
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                     newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
                                 }
-                                b.lifetime = 0;
-                                // fun boncing bullets tests. 
-                                /*
-                                let ColData = LineReflection(b, HitLoc);
-                                ctx.strokeStyle = 'rgb(200, 200, 0)';
-                                ctx.beginPath();
-                                ctx.moveTo(ColData.ColPos[0], ColData.ColPos[1]);
-                                ctx.lineTo(ColData.NewPos[0], ColData.NewPos[1]);
-                                ctx.stroke();
-
-                                newbullets.push(new Bullet(ColData.NewPos, ColData.dir));
-                                newbullets[newbullets.length - 1].lifetime = b.lifetime;
-                                b.lifetime = 0
-                                */
                             }
+                            var bv = Bounce(b.pos, 2, bvec, obj.pos, obj.scale[0], objvec);
+                            var newbulletpos = [HitLocBullet[0] + bv.avec[0], HitLocBullet[1] + bv.avec[1]];
+                            var objrot = Math.atan2(bv.bvec[1], bv.bvec[0]);
+                            var objspeed = Magnitude(bv.bvec);
+                            obj.pos = HitLocObj;
+                            obj.rotation = objrot;
+                            obj.speed = objspeed;
+                            ctx.strokeStyle = 'rgb(0, 200, 0)';
+                            ctx.beginPath();
+                            ctx.moveTo(b.pos[0], b.pos[1]);
+                            ctx.lineTo(HitLocBullet[0], HitLocBullet[1]);
+                            ctx.lineTo(newbulletpos[0], newbulletpos[1]);
+                            ctx.stroke();
+                            ctx.strokeStyle = 'rgb(255, 0, 0)';
+                            ctx.beginPath();
+                            ctx.arc(HitLocBullet[0], HitLocBullet[1], 1, 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+                            ctx.strokeStyle = 'rgb(255, 0, 0)';
+                            ctx.beginPath();
+                            ctx.arc(HitLocObj[0], HitLocObj[1], obj.scale[0], 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+                            ctx.strokeStyle = 'rgb(0, 0, 255)';
+                            ctx.beginPath();
+                            ctx.arc(b.pos[0], b.pos[1], 1, 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+                            ctx.strokeStyle = 'rgb(255, 255, 0)';
+                            ctx.beginPath();
+                            ctx.arc(obj.pos[0], obj.pos[1], obj.scale[0], 0, 2 * Math.PI);
+                            ctx.closePath();
+                            ctx.stroke();
+                            newbullets.push(new Bullet(newbulletpos, Normalize(bv.avec)));
+                            newbullets[newbullets.length - 1].lifetime = b.lifetime;
+                            b.lifetime = 0;
                         }
                     }
                 }
             }
-            //this.Buttets = this.Buttets.concat(newbullets);
+            this.Bullets = this.Bullets.concat(newbullets);
             this.Objects = this.Objects.concat(newobjs);
         };
         Game.prototype.drawBullets = function () {
             var ctx = this.Ctx;
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
-            for (var _i = 0, _a = this.Buttets; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.Bullets; _i < _a.length; _i++) {
                 var b = _a[_i];
-                ctx.moveTo(b.pos[0], b.pos[1]);
-                ctx.lineTo(b.pos[0] + b.dir[0] * b.speed, b.pos[1] + b.dir[1] * b.speed);
+                ctx.moveTo(b.pos[0] - b.dir[0] * b.speed, b.pos[1] - b.dir[1] * b.speed);
+                ctx.lineTo(b.pos[0], b.pos[1]);
             }
             ctx.closePath();
             ctx.stroke();
@@ -429,8 +590,9 @@ var asteroids;
             var rotRad = obj.rotation;
             var sin = Math.sin(rotRad);
             var cos = Math.cos(rotRad);
+            obj.speed *= 1.0 - 0.01;
             var speed = obj.speed;
-            var vel = [-sin * speed, cos * speed];
+            var vel = [cos * speed, sin * speed];
             var pos = [obj.pos[0], obj.pos[1]];
             pos[0] += vel[0];
             pos[1] += vel[1];
@@ -461,7 +623,7 @@ var asteroids;
                     var rotRad = ship.rotation;
                     var sin = Math.sin(rotRad);
                     var cos = Math.cos(rotRad);
-                    this.Buttets.push(new Bullet(ship.pos, [sin, -cos]));
+                    this.Bullets.push(new Bullet(ship.pos, [cos, sin]));
                 }
                 for (var i = 0; i < this.Objects.length; i++) {
                     var obj = this.Objects[i];
@@ -547,7 +709,7 @@ var asteroids;
                     b.dir[0] = 0; // to left
                 }
                 else if (event.keyCode == 38) {
-                    b.dir[1] = 0; // to right
+                    b.dir[1] = 0; // to up
                 }
                 else if (event.keyCode == 39) {
                     b.dir[0] = 0; // to right
@@ -571,13 +733,13 @@ var asteroids;
                     b.dir[0] = -1; // to left
                 }
                 else if (event.keyCode == 38) {
-                    b.dir[1] = -1; // to up
+                    b.dir[1] = 1; // to up
                 }
                 else if (event.keyCode == 39) {
                     b.dir[0] = 1; // to right
                 }
                 else if (event.keyCode == 40) {
-                    b.dir[1] = 1; // to down
+                    b.dir[1] = -1; // to down
                 }
                 else if (event.keyCode == 32) {
                     b.fire = 1; // fire
