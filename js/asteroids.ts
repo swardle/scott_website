@@ -102,6 +102,137 @@ namespace asteroids {
         return [x0, x1];
     }
 
+    function Distance(a: number[], b: number[]) {
+        let l: number[] = [0, 0];
+        l[0] = b[0] - a[0];
+        l[1] = b[1] - a[1];
+        var llen: number = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
+        return llen;
+    }
+
+    function Magnitude(l: number[]) {
+        var llen: number = Math.sqrt(l[0] * l[0] + l[1] * l[1]);
+        return llen;
+    }
+
+    function Bounce(aCenter: number[], aMass: number, aMoveVec: number[], bCenter: number[], bMass: number, bMoveVec: number[])
+    {
+        // First, find the normalized vector n from the center of 
+        // circle1 to the center of circle2
+        let n: number[] = VectorSub(aCenter, bCenter);
+        n = Normalize(n);
+        // Find the length of the component of each of the movement
+        // vectors along n. 
+        // a1 = aMoveVec . n
+        // a2 = bMoveVec . n
+        let a1: number = Dot(aMoveVec, n);
+        let a2: number = Dot(bMoveVec, n);
+
+        // Using the optimized version, 
+        // optimizedP =  2(a1 - a2)
+        //              -----------
+        //                m1 + m2
+        let optimizedP:number = (2.0 * (a1 - a2)) / (aMass + bMass);
+
+        // Calculate amv', the new movement vector of circle a
+        // amv' = aMoveVec - optimizedP * m2 * n
+        let amvp: number[] = [
+            aMoveVec[0] - optimizedP * bMass * n[0], 
+            aMoveVec[1] - optimizedP * bMass * n[1]
+        ];
+
+        // Calculate bmv', the new movement vector of circle1
+        // bmv' = bMoveVec - optimizedP * m2 * n
+        let bmvp: number[] = [
+            bMoveVec[0] - optimizedP * bMass * n[0],
+            bMoveVec[1] - optimizedP * bMass * n[1]
+        ];
+
+        // return the updated movement vectors 
+        return [amvp,bmvp];
+    }
+
+    function BallvBall(aCenter: number[], aRadius: number, aMoveVecParam: number[], bCenter: number[], bRadius: number, bMoveVecParam: number[]) {
+        // find the relative movment between a and b.  
+        // make it so b is not moving. 
+        let aMoveVec: number[] = VectorSub(aMoveVecParam, bMoveVecParam);
+        return BallvBallStationary(aCenter, aRadius, aMoveVec, bCenter, bRadius);
+    }
+
+    function BallvBallStationary(aCenter: number[], aRadius: number, aMoveVecParam: number[], bCenter: number[], bRadius: number) {
+        // make a copy of this vector
+        let aMoveVec: number[] = aMoveVecParam.slice();
+        // Early Escape test: if the length of the aMoveVec is less
+        // than distance between the centers of these circles minus 
+        // their radii, there's no way they can hit. 
+        let dist: number = Distance(aCenter, bCenter);
+        let sumRadii: number = (bRadius + aRadius);
+        dist -= sumRadii;
+        if (Magnitude(aMoveVec) < dist) {
+            return [false, 0.0];
+        }
+
+        // Normalize the aMoveVec
+        var N: number[] = Normalize(aMoveVec);
+
+        // Find C, the vector from the center of the moving 
+        // circle A to the center of B
+        let C: number[] = VectorSub(bCenter, aCenter);
+
+        // D = N . C = ||C|| * cos(angle between N and C)
+        let D: number = Dot(N, C);
+
+        // Another early escape: Make sure that A is moving 
+        // towards B! If the dot product between the aMoveVec and 
+        // bCenter - a.aCenter that or equal to 0, 
+        // A isn't isn't moving towards B
+        if (D <= 0) {
+            return [false, 0.0];
+        }
+        // Find the length of the vector C
+        let lengthC: number = Magnitude(C);
+
+        let F: number = (lengthC * lengthC) - (D * D);
+
+        // Escape test: if the closest that A will get to B 
+        // is more than the sum of their radii, there's no 
+        // way they are going collide
+        let sumRadiiSquared: number = sumRadii * sumRadii;
+        if (F >= sumRadiiSquared) {
+            return [false, 0.0];
+        }
+
+        // We now have F and sumRadii, two sides of a right triangle. 
+        // Use these to find the third side, sqrt(T)
+        let T: number = sumRadiiSquared - F;
+
+        // If there is no such right triangle with sides length of 
+        // sumRadii and sqrt(f), T will probably be less than 0. 
+        // Better to check now than perform a square root of a 
+        // negative number. 
+        if (T < 0) {
+            return [false, 0.0];
+        }
+
+        // Therefore the distance the circle has to travel along 
+        // aMoveVec is D - sqrt(T)
+        let distance: number = D - Math.sqrt(T);
+
+        // Get the magnitude of the movement vector
+        let mag: number = Magnitude(aMoveVec);
+
+        // Finally, make sure that the distance A has to move 
+        // to touch B is not greater than the magnitude of the 
+        // movement vector. 
+        if (mag < distance) {
+            return [false, 0.0];
+        }
+
+        // return distance / mag or the time of colision
+        let t: number = distance / mag;
+        return [false, t];
+    }
+
 
     // Line a vs ball b
     // {IsHit=false, Normal=side, Time=t}
@@ -214,7 +345,7 @@ namespace asteroids {
         WorldHight: number;
         Objects: any[] = [];
         ConButtons: Buttons;
-        Buttets: Bullet[];
+        Bullets: Bullet[];
         Score: number;
         Level: number;
 
@@ -230,20 +361,18 @@ namespace asteroids {
             this.reset();
         }
 
-        reset(reset_type:string = "")
-        {
+        reset(reset_type: string = "") {
             this.ConButtons = new Buttons;
-            this.Buttets = [];
+            this.Bullets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
-            if(reset_type === "level_end")
-            {
+            if (reset_type === "level_end") {
 
             }
-            else{
+            else {
                 this.Score = 0;
                 this.Level = 0;
             }
@@ -299,7 +428,7 @@ namespace asteroids {
                 x = default_pos[0];
                 y = default_pos[1];
             }
-            else{
+            else {
                 while (1) {
                     x = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
                     y = randomInt(sizeAsteroid, this.ScreenWidth - sizeAsteroid);
@@ -379,11 +508,11 @@ namespace asteroids {
             let width: number = this.Canvas.width;
             let height: number = this.Canvas.height;
             // move bullets
-            for (let i: number = 0; i < this.Buttets.length; i++) {
-                let b: Bullet = this.Buttets[i];
+            for (let i: number = 0; i < this.Bullets.length; i++) {
+                let b: Bullet = this.Bullets[i];
                 b.lifetime -= 1;
                 if (b.lifetime < 0) {
-                    this.Buttets.splice(i, 1);
+                    this.Bullets.splice(i, 1);
                 }
                 else {
                     b.pos[0] += b.dir[0] * b.speed;
@@ -416,8 +545,8 @@ namespace asteroids {
             //let newbullets:Bullet[] = [];
             let newobjs = []
             // Test bullets vs objtype = Asteroid
-            for (let i: number = 0; i < this.Buttets.length; i++) {
-                let b: Bullet = this.Buttets[i];
+            for (let i: number = 0; i < this.Bullets.length; i++) {
+                let b: Bullet = this.Bullets[i];
                 for (let j: number = 0; j < this.Objects.length; j++) {
                     let obj = this.Objects[j];
                     if (obj.objtype === "Asteroid") {
@@ -457,7 +586,7 @@ namespace asteroids {
                     }
                 }
             }
-            //this.Buttets = this.Buttets.concat(newbullets);
+            //this.Bullets = this.Bullets.concat(newbullets);
             this.Objects = this.Objects.concat(newobjs);
         }
 
@@ -466,7 +595,7 @@ namespace asteroids {
             let ctx = this.Ctx;
             ctx.strokeStyle = 'rgb(255, 255, 255)';
             ctx.beginPath();
-            for (let b of this.Buttets) {
+            for (let b of this.Bullets) {
                 ctx.moveTo(b.pos[0], b.pos[1]);
                 ctx.lineTo(b.pos[0] + b.dir[0] * b.speed, b.pos[1] + b.dir[1] * b.speed);
             }
@@ -509,7 +638,7 @@ namespace asteroids {
             if (!ship.dead && this.Objects.length > 1) {
                 let el: HTMLElement = document.getElementById("scoreboard");
                 if (el) {
-                    el.innerText = "Score: "+this.Score+" Level: " + this.Level + "\n";
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n";
                 }
                 ship.rotation += (this.ConButtons.dir[0] * 8 * Math.PI) / 180.0;
                 ship.speed = ship.speed + this.ConButtons.dir[1] * 0.25;
@@ -517,7 +646,7 @@ namespace asteroids {
                     var rotRad = ship.rotation;
                     var sin = Math.sin(rotRad);
                     var cos = Math.cos(rotRad);
-                    this.Buttets.push(new Bullet(ship.pos, [sin, -cos]));
+                    this.Bullets.push(new Bullet(ship.pos, [sin, -cos]));
                 }
 
                 for (let i: number = 0; i < this.Objects.length; i++) {
@@ -547,8 +676,8 @@ namespace asteroids {
             else if (ship.dead && this.Objects.length > 1) {
                 let el: HTMLElement = document.getElementById("scoreboard");
                 if (el) {
-                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +                    
-                    "press s to start";
+                    el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +
+                        "press s to start";
                 }
                 if (this.ConButtons.start) {
                     this.reset();
@@ -556,19 +685,18 @@ namespace asteroids {
                     ship.dead = false;
                 }
             }
-            else if (this.Objects.length <= 1)
-            {
+            else if (this.Objects.length <= 1) {
                 let el: HTMLElement = document.getElementById("scoreboard");
                 if (el) {
                     el.innerText = "Score: " + this.Score + " Level: " + this.Level + "\n" +
-                    "level over press s to start next level";
+                        "level over press s to start next level";
                 }
                 if (this.ConButtons.start) {
                     this.Level += 1;
                     this.reset("level_end");
                     ship = this.Objects[0];
                     ship.dead = false;
-                }                
+                }
             }
 
             //render the buffered canvas onto the original canvas element
