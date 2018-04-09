@@ -118,7 +118,7 @@ namespace asteroids {
     class BouncedVelocities {
         constructor(public avec: number[], public bvec: number[], ) { }
     }
-    function Bounce(aCenter: number[], aMass: number, aMoveVec: number[], 
+    function Bounce(aCenter: number[], aMass: number, aMoveVec: number[],
         bCenter: number[], bMass: number, bMoveVec: number[]): BouncedVelocities {
         // First, find the normalized vector n from the center of 
         // circle1 to the center of circle2
@@ -475,7 +475,7 @@ namespace asteroids {
                 rotation: rotRad,
                 speed: sp,
                 dead: false,
-                hitpoints: sizeAsteroid
+                hitpoints: (sizeAsteroid/5)
 
             };
         }
@@ -562,6 +562,7 @@ namespace asteroids {
             var ctx = this.Ctx;
             let newbullets: Bullet[] = [];
             let newobjs = []
+            let asteroidsToDelete: number[] = [];
             // Test bullets vs objtype = Asteroid
             for (let i: number = 0; i < this.Bullets.length; i++) {
                 let b: Bullet = this.Bullets[i];
@@ -573,29 +574,28 @@ namespace asteroids {
                         let sin = Math.sin(rotRad);
                         let cos = Math.cos(rotRad);
                         let speed = obj.speed;
-                        let objvec: number[] = [cos * speed, sin * speed];                        
+                        let objvec: number[] = [cos * speed, sin * speed];
                         let hit: Hit = BallvBall(
                             b.pos, 1, bvec,
                             obj.pos, obj.scale[0], objvec);
                         if (hit.isHit === true) {
-                            let HitLocBullet = [b.pos[0] + b.dir[0]* b.speed * hit.time,
-                                b.pos[1] + b.dir[1] * b.speed * hit.time];
+                            let HitLocBullet = [b.pos[0] + b.dir[0] * b.speed * hit.time,
+                            b.pos[1] + b.dir[1] * b.speed * hit.time];
                             let HitLocObj = [obj.pos[0] + objvec[0] * hit.time,
-                                obj.pos[1] + objvec[1] * hit.time];
+                            obj.pos[1] + objvec[1] * hit.time];
                             this.Score += 1;
                             obj.hitpoints -= 1;
-                            if (obj.hitpoints === 0)
-                            {
-                                this.Objects.splice(j, 1);
+                            if (obj.hitpoints < 0) {
+                                asteroidsToDelete.push(j);
                                 if (obj.scale[0] > 5) {
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
                                 }
                             }
-                            
+
                             let bv: BouncedVelocities = Bounce(
-                                b.pos, 2, bvec, 
+                                b.pos, 2, bvec,
                                 obj.pos, obj.scale[0], objvec);
                             let newbulletpos = [HitLocBullet[0] + bv.avec[0], HitLocBullet[1] + bv.avec[1]];
                             let objrot = Math.atan2(bv.bvec[1], bv.bvec[0]);
@@ -621,7 +621,7 @@ namespace asteroids {
                             ctx.arc(HitLocObj[0], HitLocObj[1], obj.scale[0], 0, 2 * Math.PI);
                             ctx.closePath();
                             ctx.stroke();
-                            
+
                             ctx.strokeStyle = 'rgb(0, 0, 255)';
                             ctx.beginPath();
                             ctx.arc(b.pos[0], b.pos[1], 1, 0, 2 * Math.PI);
@@ -640,6 +640,12 @@ namespace asteroids {
                         }
                     }
                 }
+            }
+            // guarantee the order
+            asteroidsToDelete.sort();
+            // delete in reverse order so the index are not messed with
+            for (let index = asteroidsToDelete.length - 1; index >= 0; --index) {
+                this.Objects.splice(asteroidsToDelete[index], 1);
             }
             this.Bullets = this.Bullets.concat(newbullets);
             this.Objects = this.Objects.concat(newobjs);

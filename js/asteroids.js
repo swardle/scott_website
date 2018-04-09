@@ -424,7 +424,7 @@ var asteroids;
                 rotation: rotRad,
                 speed: sp,
                 dead: false,
-                hitpoints: sizeAsteroid
+                hitpoints: (sizeAsteroid / 5)
             };
         };
         // game::DrawSpaceShip
@@ -503,6 +503,7 @@ var asteroids;
             var ctx = this.Ctx;
             var newbullets = [];
             var newobjs = [];
+            var asteroidsToDelete = [];
             // Test bullets vs objtype = Asteroid
             for (var i = 0; i < this.Bullets.length; i++) {
                 var b = this.Bullets[i];
@@ -523,12 +524,12 @@ var asteroids;
                                 obj.pos[1] + objvec[1] * hit.time];
                             this.Score += 1;
                             obj.hitpoints -= 1;
-                            if (obj.hitpoints === 0) {
-                                this.Objects.splice(j, 1);
+                            if (obj.hitpoints < 0) {
+                                asteroidsToDelete.push(j);
                                 if (obj.scale[0] > 5) {
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
-                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, obj.pos));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
+                                    newobjs.push(this.AddAsteroid(obj.scale[0] / 2, HitLocObj));
                                 }
                             }
                             var bv = Bounce(b.pos, 2, bvec, obj.pos, obj.scale[0], objvec);
@@ -570,6 +571,12 @@ var asteroids;
                         }
                     }
                 }
+            }
+            // guarantee the order
+            asteroidsToDelete.sort();
+            // delete in reverse order so the index are not messed with
+            for (var index = asteroidsToDelete.length - 1; index >= 0; --index) {
+                this.Objects.splice(asteroidsToDelete[index], 1);
             }
             this.Bullets = this.Bullets.concat(newbullets);
             this.Objects = this.Objects.concat(newobjs);
