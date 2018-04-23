@@ -905,8 +905,10 @@ var asteroids;
         }
     }
     asteroids.newGame = newGame;
-    function HtmlButtonDown(button) {
-        if (gGame !== null) {
+    function HtmlButtonDown(button, type) {
+        if (gGame !== null &&
+            (isMobile() && type === "touch") ||
+            (!isMobile() && type === "mouse")) {
             var b = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = -1; // to left
@@ -930,8 +932,10 @@ var asteroids;
         }
     }
     asteroids.HtmlButtonDown = HtmlButtonDown;
-    function HtmlButtonUp(button) {
-        if (gGame !== null) {
+    function HtmlButtonUp(button, type) {
+        if (gGame !== null &&
+            (isMobile() && type === "touch") ||
+            (!isMobile() && type === "mouse")) {
             var b = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = 0; // to left

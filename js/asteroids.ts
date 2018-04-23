@@ -1,6 +1,6 @@
 namespace asteroids {
     let gGame: Game = null;
-    
+
     function randomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
@@ -980,8 +980,10 @@ namespace asteroids {
             gGame.Draw();
         }
     }
-    export function HtmlButtonDown(button) {
-        if (gGame !== null) {
+    export function HtmlButtonDown(button, type) {
+        if (gGame !== null &&
+            (isMobile() && type === "touch") ||
+            (!isMobile() && type === "mouse")) {
             let b: Buttons = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = -1; // to left
@@ -999,8 +1001,10 @@ namespace asteroids {
             gGame.setButtons(b);
         }
     }
-    export function HtmlButtonUp(button) {
-        if (gGame !== null) {
+    export function HtmlButtonUp(button, type) {
+        if (gGame !== null &&
+            (isMobile() && type === "touch") ||
+            (!isMobile() && type === "mouse")) {
             let b: Buttons = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = 0; // to left
