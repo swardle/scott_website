@@ -359,19 +359,19 @@ var asteroids;
             if (!isMobile()) {
                 return;
             }
-            var buttonSize = this.ScreenWidth * 0.03;
+            var buttonSize = this.ScreenWidth * 0.05;
             // the pos of B botton
-            var x = this.ScreenWidth * 0.2;
-            var y = this.ScreenHeight * 0.9;
+            var x = this.ScreenWidth * 0.25;
+            var y = this.ScreenHeight * 0.85;
             //   U
             // L D R X   S
             this.TouchButtons = [];
-            this.TouchButtons.push(new TouchScreenButton("U", [x, y - buttonSize * 4], buttonSize));
-            this.TouchButtons.push(new TouchScreenButton("L", [x - buttonSize * 4, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("U", [x, y - buttonSize * 3], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("L", [x - buttonSize * 3, y], buttonSize));
             this.TouchButtons.push(new TouchScreenButton("D", [x, y], buttonSize));
-            this.TouchButtons.push(new TouchScreenButton("R", [x + buttonSize * 4, y], buttonSize));
-            this.TouchButtons.push(new TouchScreenButton("F", [x + buttonSize * 8, y], buttonSize));
-            this.TouchButtons.push(new TouchScreenButton("S", [x + buttonSize * 16, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("R", [x + buttonSize * 3, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("F", [x + buttonSize * 7, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("S", [x + buttonSize * 12, y], buttonSize));
         };
         Game.prototype.DrawButtons = function () {
             var ctx = this.Ctx;
@@ -382,6 +382,9 @@ var asteroids;
                 ctx.arc(t.pos[0], t.pos[1], t.size, 0, 2 * Math.PI);
                 ctx.closePath();
                 ctx.stroke();
+                ctx.font = "30px";
+                ctx.fillStyle = 'rgb(255, 255, 255)';
+                ctx.fillText(t.name, t.pos[0] - 3, t.pos[1] + 3);
             }
         };
         // game::AddSpaceShip
@@ -694,7 +697,6 @@ var asteroids;
                 this.drawBullets();
                 this.bulletsVsAsteroids();
                 this.shipVsAsteroids();
-                this.DrawButtons();
                 if (this.ConButtons.start) {
                     ship.dead = false;
                     ship.speed = 0;
@@ -729,6 +731,7 @@ var asteroids;
                     ship.dead = false;
                 }
             }
+            this.DrawButtons();
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
         };
@@ -904,6 +907,6 @@ var asteroids;
     asteroids.newGame = newGame;
 })(asteroids || (asteroids = {}));
 window.onload = function () {
-    //asteroids.newGame();
+    asteroids.newGame();
 };
 //# sourceMappingURL=asteroids.js.map

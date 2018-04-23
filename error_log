@@ -1,0 +1,179 @@
+[04-Nov-2017 15:21:31 America/Los_Angeles] PHP Warning:  mysqli::mysqli(): (28000/1045): Access denied for user 'swardlec_seiko'@'localhost' (using password: NO) in /home7/swardlec/public_html/sweb/submit.php on line 36
+[04-Nov-2017 15:40:01 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 46
+[04-Nov-2017 16:56:27 America/Denver] PHP Parse error:  syntax error, unexpected '}' in /home7/swardlec/public_html/sweb/submit.php on line 11
+[04-Nov-2017 15:59:09 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 54
+[04-Nov-2017 16:09:41 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 54
+[04-Nov-2017 16:11:22 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 54
+[04-Nov-2017 16:23:53 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 52
+[04-Nov-2017 16:24:51 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 52
+[04-Nov-2017 16:27:11 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 55
+[04-Nov-2017 16:27:12 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 55
+[04-Nov-2017 16:30:28 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 56
+[04-Nov-2017 17:31:57 America/Denver] PHP Parse error:  syntax error, unexpected 'console_log' (T_STRING), expecting ',' or ';' in /home7/swardlec/public_html/sweb/submit.php on line 64
+[04-Nov-2017 17:32:13 America/Denver] PHP Parse error:  syntax error, unexpected 'console_log' (T_STRING), expecting ',' or ';' in /home7/swardlec/public_html/sweb/submit.php on line 64
+[04-Nov-2017 17:32:55 America/Denver] PHP Parse error:  syntax error, unexpected 'console_log' (T_STRING), expecting ',' or ';' in /home7/swardlec/public_html/sweb/submit.php on line 64
+[04-Nov-2017 16:33:17 America/Los_Angeles] PHP Fatal error:  require(): Failed opening required 'connection.php' (include_path='.:/usr/php/56/usr/lib64:/usr/php/56/usr/share/pear') in /home7/swardlec/public_html/sweb/submit.php on line 56
+[04-Nov-2017 16:38:27 America/Los_Angeles] PHP Fatal error:  Call to undefined function Connect() in /home7/swardlec/public_html/sweb/submit.php on line 56
+[04-Nov-2017 23:23:53 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[04-Nov-2017 23:23:53 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[04-Nov-2017 23:23:53 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[04-Nov-2017 23:23:53 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[05-Nov-2017 23:25:16 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[05-Nov-2017 23:25:16 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[05-Nov-2017 23:25:16 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[05-Nov-2017 23:25:16 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[07-Nov-2017 23:17:11 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[07-Nov-2017 23:17:11 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[07-Nov-2017 23:17:11 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[07-Nov-2017 23:17:11 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[08-Nov-2017 23:15:47 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[08-Nov-2017 23:15:47 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[08-Nov-2017 23:15:47 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[08-Nov-2017 23:15:47 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[11-Nov-2017 23:24:16 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[11-Nov-2017 23:24:16 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[11-Nov-2017 23:24:16 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[11-Nov-2017 23:24:16 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[13-Nov-2017 23:17:08 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[13-Nov-2017 23:17:08 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[13-Nov-2017 23:17:08 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[13-Nov-2017 23:17:08 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[14-Nov-2017 23:22:04 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[14-Nov-2017 23:22:04 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[14-Nov-2017 23:22:04 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[14-Nov-2017 23:22:04 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[16-Nov-2017 23:21:47 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[16-Nov-2017 23:21:47 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[16-Nov-2017 23:21:47 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[16-Nov-2017 23:21:47 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[17-Nov-2017 23:22:23 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[17-Nov-2017 23:22:23 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[17-Nov-2017 23:22:23 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[17-Nov-2017 23:22:23 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[18-Nov-2017 23:16:34 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[18-Nov-2017 23:16:34 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[18-Nov-2017 23:16:34 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[18-Nov-2017 23:16:34 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[20-Nov-2017 23:24:31 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[20-Nov-2017 23:24:31 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[20-Nov-2017 23:24:31 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[20-Nov-2017 23:24:31 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[22-Nov-2017 23:17:45 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[22-Nov-2017 23:17:45 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[22-Nov-2017 23:17:45 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[22-Nov-2017 23:17:45 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[23-Nov-2017 23:24:42 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[23-Nov-2017 23:24:42 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[23-Nov-2017 23:24:42 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[23-Nov-2017 23:24:42 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[25-Nov-2017 23:24:07 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[25-Nov-2017 23:24:07 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[25-Nov-2017 23:24:07 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[25-Nov-2017 23:24:07 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[27-Nov-2017 23:20:43 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[27-Nov-2017 23:20:43 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[27-Nov-2017 23:20:43 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[27-Nov-2017 23:20:43 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[29-Nov-2017 23:18:58 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[29-Nov-2017 23:18:58 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[29-Nov-2017 23:18:58 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[29-Nov-2017 23:18:58 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[30-Nov-2017 23:17:18 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[30-Nov-2017 23:17:18 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[30-Nov-2017 23:17:18 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[30-Nov-2017 23:17:18 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[03-Dec-2017 23:19:19 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[03-Dec-2017 23:19:19 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[03-Dec-2017 23:19:19 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[03-Dec-2017 23:19:19 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[04-Dec-2017 23:19:39 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[04-Dec-2017 23:19:39 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[04-Dec-2017 23:19:39 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[04-Dec-2017 23:19:39 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[05-Dec-2017 23:25:17 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[05-Dec-2017 23:25:17 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[05-Dec-2017 23:25:17 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[05-Dec-2017 23:25:17 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[06-Dec-2017 23:18:29 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[06-Dec-2017 23:18:29 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[06-Dec-2017 23:18:29 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[06-Dec-2017 23:18:29 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[08-Dec-2017 23:23:50 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[08-Dec-2017 23:23:50 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[08-Dec-2017 23:23:50 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[08-Dec-2017 23:23:50 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[10-Dec-2017 23:20:38 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[10-Dec-2017 23:20:38 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[10-Dec-2017 23:20:38 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[10-Dec-2017 23:20:38 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[11-Dec-2017 23:25:22 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[11-Dec-2017 23:25:22 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[11-Dec-2017 23:25:22 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[11-Dec-2017 23:25:22 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[12-Dec-2017 23:22:02 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[12-Dec-2017 23:22:02 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[12-Dec-2017 23:22:02 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[12-Dec-2017 23:22:02 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[14-Dec-2017 23:18:26 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[14-Dec-2017 23:18:26 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[14-Dec-2017 23:18:26 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[14-Dec-2017 23:18:26 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[15-Dec-2017 23:23:14 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[15-Dec-2017 23:23:14 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[15-Dec-2017 23:23:14 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[15-Dec-2017 23:23:14 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[16-Dec-2017 23:19:40 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[16-Dec-2017 23:19:40 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[16-Dec-2017 23:19:40 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[16-Dec-2017 23:19:40 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[17-Dec-2017 23:24:37 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[17-Dec-2017 23:24:37 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[17-Dec-2017 23:24:37 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[17-Dec-2017 23:24:37 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[18-Dec-2017 23:22:42 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[18-Dec-2017 23:22:42 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[18-Dec-2017 23:22:42 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[18-Dec-2017 23:22:42 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[20-Dec-2017 23:23:12 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[20-Dec-2017 23:23:12 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[20-Dec-2017 23:23:12 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[20-Dec-2017 23:23:12 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[21-Dec-2017 23:19:45 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[21-Dec-2017 23:19:45 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[21-Dec-2017 23:19:45 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[21-Dec-2017 23:19:45 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[22-Dec-2017 23:16:37 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[22-Dec-2017 23:16:37 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[22-Dec-2017 23:16:37 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[22-Dec-2017 23:16:37 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[23-Dec-2017 23:19:33 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[23-Dec-2017 23:19:33 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[23-Dec-2017 23:19:33 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[23-Dec-2017 23:19:33 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[24-Dec-2017 23:23:31 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[24-Dec-2017 23:23:31 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[24-Dec-2017 23:23:31 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[24-Dec-2017 23:23:31 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[25-Dec-2017 23:17:29 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[25-Dec-2017 23:17:29 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[25-Dec-2017 23:17:29 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[25-Dec-2017 23:17:29 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[26-Dec-2017 23:20:24 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[26-Dec-2017 23:20:24 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[26-Dec-2017 23:20:24 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[26-Dec-2017 23:20:24 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[27-Dec-2017 23:20:50 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[27-Dec-2017 23:20:50 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[27-Dec-2017 23:20:50 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[27-Dec-2017 23:20:50 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[28-Dec-2017 22:31:02 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[28-Dec-2017 22:31:02 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[28-Dec-2017 22:31:02 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[28-Dec-2017 22:31:02 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[28-Dec-2017 22:41:32 America/Los_Angeles] PHP Notice:  Undefined index: name in /home7/swardlec/public_html/sweb/submit.php on line 44
+[28-Dec-2017 22:41:32 America/Los_Angeles] PHP Notice:  Undefined index: email in /home7/swardlec/public_html/sweb/submit.php on line 45
+[28-Dec-2017 22:41:32 America/Los_Angeles] PHP Notice:  Undefined index: subject in /home7/swardlec/public_html/sweb/submit.php on line 46
+[28-Dec-2017 22:41:32 America/Los_Angeles] PHP Notice:  Undefined index: message in /home7/swardlec/public_html/sweb/submit.php on line 47
+[28-Dec-2017 23:42:14 America/Denver] PHP Parse error:  syntax error, unexpected '=' in /home7/swardlec/public_html/sweb/submit.php on line 16
+[28-Dec-2017 23:42:26 America/Denver] PHP Parse error:  syntax error, unexpected '=' in /home7/swardlec/public_html/sweb/submit.php on line 16
+[28-Dec-2017 23:43:01 America/Denver] PHP Parse error:  syntax error, unexpected '=' in /home7/swardlec/public_html/sweb/submit.php on line 16
