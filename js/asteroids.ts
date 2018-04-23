@@ -981,9 +981,9 @@ namespace asteroids {
         }
     }
     export function HtmlButtonDown(button, type) {
-        if (gGame !== null &&
-            (isMobile() && type === "touch") ||
-            (!isMobile() && type === "mouse")) {
+        if (gGame !== null /* &&
+            isMobile() && type === "touch") ||
+        (!isMobile() && type === "mouse")*/) {
             let b: Buttons = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = -1; // to left
@@ -1002,9 +1002,9 @@ namespace asteroids {
         }
     }
     export function HtmlButtonUp(button, type) {
-        if (gGame !== null &&
-            (isMobile() && type === "touch") ||
-            (!isMobile() && type === "mouse")) {
+        if (gGame !== null /* &&
+           (isMobile() && type === "touch") ||
+        (!isMobile() && type === "mouse")*/) {
             let b: Buttons = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = 0; // to left

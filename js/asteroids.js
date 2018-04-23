@@ -906,9 +906,9 @@ var asteroids;
     }
     asteroids.newGame = newGame;
     function HtmlButtonDown(button, type) {
-        if (gGame !== null &&
-            (isMobile() && type === "touch") ||
-            (!isMobile() && type === "mouse")) {
+        if (gGame !== null /* &&
+            isMobile() && type === "touch") ||
+        (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = -1; // to left
@@ -933,9 +933,9 @@ var asteroids;
     }
     asteroids.HtmlButtonDown = HtmlButtonDown;
     function HtmlButtonUp(button, type) {
-        if (gGame !== null &&
-            (isMobile() && type === "touch") ||
-            (!isMobile() && type === "mouse")) {
+        if (gGame !== null /* &&
+           (isMobile() && type === "touch") ||
+        (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
             if (button.name === "L") {
                 b.dir[0] = 0; // to left
