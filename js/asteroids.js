@@ -1,5 +1,6 @@
 var asteroids;
 (function (asteroids) {
+    var gGame = null;
     function randomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
@@ -875,7 +876,6 @@ var asteroids;
         });
     }
     function newGame() {
-        var gGame = null;
         console.log("myNewAnim");
         var canvas = document.getElementById('canvas');
         if (canvas.getContext) {
@@ -905,6 +905,56 @@ var asteroids;
         }
     }
     asteroids.newGame = newGame;
+    function HtmlButtonDown(button) {
+        if (gGame !== null) {
+            var b = gGame.getButtons();
+            if (button.name === "L") {
+                b.dir[0] = -1; // to left
+            }
+            else if (button.name === "U") {
+                b.dir[1] = 1; // to up
+            }
+            else if (button.name === "R") {
+                b.dir[0] = 1; // to right
+            }
+            else if (button.name === "D") {
+                b.dir[1] = -1; // to down
+            }
+            else if (button.name === "F") {
+                b.fire = 1; // fire
+            }
+            else if (button.name === "S") {
+                b.start = 1; // start s key
+            }
+            gGame.setButtons(b);
+        }
+    }
+    asteroids.HtmlButtonDown = HtmlButtonDown;
+    function HtmlButtonUp(button) {
+        if (gGame !== null) {
+            var b = gGame.getButtons();
+            if (button.name === "L") {
+                b.dir[0] = 0; // to left
+            }
+            else if (button.name === "U") {
+                b.dir[1] = 0; // to up
+            }
+            else if (button.name === "R") {
+                b.dir[0] = 0; // to right
+            }
+            else if (button.name === "D") {
+                b.dir[1] = 0; // to down
+            }
+            else if (button.name === "F") {
+                b.fire = 0; // fire
+            }
+            else if (button.name === "S") {
+                b.start = 0; // start s key
+            }
+            gGame.setButtons(b);
+        }
+    }
+    asteroids.HtmlButtonUp = HtmlButtonUp;
 })(asteroids || (asteroids = {}));
 window.onload = function () {
     asteroids.newGame();

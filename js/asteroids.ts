@@ -1,4 +1,6 @@
 namespace asteroids {
+    let gGame: Game = null;
+    
     function randomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
@@ -405,8 +407,7 @@ namespace asteroids {
         }
 
         AddButtons() {
-            if(!isMobile())
-            {
+            if (!isMobile()) {
                 return;
             }
             let buttonSize: number = this.ScreenWidth * 0.05;
@@ -435,7 +436,7 @@ namespace asteroids {
                 ctx.stroke();
                 ctx.font = "30px";
                 ctx.fillStyle = 'rgb(255, 255, 255)';
-                ctx.fillText(t.name, t.pos[0]-3, t.pos[1]+3);
+                ctx.fillText(t.name, t.pos[0] - 3, t.pos[1] + 3);
             }
         }
 
@@ -830,8 +831,7 @@ namespace asteroids {
         }
     }
 
-    function CreateTouchInputHandlers(gGame: Game, canvas: HTMLCanvasElement)
-    {
+    function CreateTouchInputHandlers(gGame: Game, canvas: HTMLCanvasElement) {
         function touchStartHander(e) {
             e.preventDefault();
             if (gGame !== null) {
@@ -948,7 +948,6 @@ namespace asteroids {
     }
 
     export function newGame() {
-        let gGame: Game = null;
         console.log("myNewAnim");
         let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
         if (canvas.getContext) {
@@ -973,17 +972,52 @@ namespace asteroids {
                 else {
                     CreateKeyboardInputHandlers(gGame, canvas);
                 }
-                
+
             }
         }
-
-
 
         function updateFrame() {
             gGame.Draw();
         }
     }
-
+    export function HtmlButtonDown(button) {
+        if (gGame !== null) {
+            let b: Buttons = gGame.getButtons();
+            if (button.name === "L") {
+                b.dir[0] = -1; // to left
+            } else if (button.name === "U") {
+                b.dir[1] = 1; // to up
+            } else if (button.name === "R") {
+                b.dir[0] = 1; // to right
+            } else if (button.name === "D") {
+                b.dir[1] = -1; // to down
+            } else if (button.name === "F") {
+                b.fire = 1; // fire
+            } else if (button.name === "S") {
+                b.start = 1; // start s key
+            }
+            gGame.setButtons(b);
+        }
+    }
+    export function HtmlButtonUp(button) {
+        if (gGame !== null) {
+            let b: Buttons = gGame.getButtons();
+            if (button.name === "L") {
+                b.dir[0] = 0; // to left
+            } else if (button.name === "U") {
+                b.dir[1] = 0; // to up
+            } else if (button.name === "R") {
+                b.dir[0] = 0; // to right
+            } else if (button.name === "D") {
+                b.dir[1] = 0; // to down
+            } else if (button.name === "F") {
+                b.fire = 0; // fire
+            } else if (button.name === "S") {
+                b.start = 0; // start s key
+            }
+            gGame.setButtons(b);
+        }
+    }
 }
 
 window.onload = () => {
