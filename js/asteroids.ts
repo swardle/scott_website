@@ -341,6 +341,23 @@ namespace asteroids {
         return { ColPos: colPos, NewPos: newPos, dir: vnew };
     }
 
+
+    function isMobile(): boolean {
+        let isAndroid = navigator.userAgent.match(/Android/i) !== null;
+        let isiOS = navigator.userAgent.match(/iPhone|iPad|iPod/i) !== null;
+        let isBlackBerry = navigator.userAgent.match(/BlackBerry/i) !== null;
+        let isOpera = navigator.userAgent.match(/Opera Mini/i) !== null;
+        let isWindows = navigator.userAgent.match(/IEMobile/i) !== null;
+        return (isAndroid || isiOS || isBlackBerry || isOpera || isWindows);
+    }
+
+
+    class TouchScreenButton {
+        constructor(public name: string, public pos: number[], public size: number) {
+        }
+    }
+
+
     class Game {
         Canvas: HTMLCanvasElement;
         FrontCanvas: HTMLCanvasElement;
@@ -352,6 +369,7 @@ namespace asteroids {
         WorldHight: number;
         Objects: any[] = [];
         ConButtons: Buttons;
+        TouchButtons: TouchScreenButton[] = [];
         Bullets: Bullet[];
         Score: number;
         Level: number;
@@ -366,6 +384,7 @@ namespace asteroids {
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
             this.reset();
+            this.AddButtons();
         }
 
         reset(reset_type: string = "") {
@@ -373,8 +392,8 @@ namespace asteroids {
             this.Bullets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
-            this.Objects.push(this.AddAsteroid(20));
-            this.Objects.push(this.AddAsteroid(20));
+            //this.Objects.push(this.AddAsteroid(20));
+            //this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
             if (reset_type === "level_end") {
 
@@ -385,11 +404,44 @@ namespace asteroids {
             }
         }
 
+        AddButtons() {
+            if(!isMobile())
+            {
+                return;
+            }
+            let buttonSize: number = this.ScreenWidth * 0.03;
+            // the pos of B botton
+            let x = this.ScreenWidth * 0.2;
+            let y = this.ScreenHeight * 0.9;
+            //   U
+            // L D R X   S
+            this.TouchButtons = [];
+            this.TouchButtons.push(new TouchScreenButton("U", [x, y - buttonSize * 4], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("L", [x - buttonSize * 4, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("D", [x, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("R", [x + buttonSize * 4, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("F", [x + buttonSize * 8, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("S", [x + buttonSize * 16, y], buttonSize));
+        }
+
+        DrawButtons() {
+            let ctx: CanvasRenderingContext2D = this.Ctx;
+            for (let i = 0; i < this.TouchButtons.length; i++) {
+                let t: TouchScreenButton = this.TouchButtons[i];
+                ctx.strokeStyle = 'rgb(255, 255, 255)';
+                ctx.beginPath();
+                ctx.arc(t.pos[0], t.pos[1], t.size, 0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+
+
         // game::AddSpaceShip
         AddSpaceShip() {
             let sizeSpaceShip: number = 5;
             let x: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            let y: number = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
+            let y: number = randomInt(sizeSpaceShip, this.ScreenHeight - sizeSpaceShip);
             let rot: number = randomInt(0, 359);
             let rotRad: number = rot * Math.PI / 180;
             let sin: number = Math.sin(rotRad);
@@ -475,7 +527,7 @@ namespace asteroids {
                 rotation: rotRad,
                 speed: sp,
                 dead: false,
-                hitpoints: (sizeAsteroid/5)
+                hitpoints: (sizeAsteroid / 5)
 
             };
         }
@@ -726,12 +778,13 @@ namespace asteroids {
                 this.drawBullets();
                 this.bulletsVsAsteroids();
                 this.shipVsAsteroids();
+                this.DrawButtons();
                 if (this.ConButtons.start) {
                     ship.dead = false;
                     ship.speed = 0;
                     this.Objects.splice(1, this.Objects.length - 1);
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));
+                    //this.Objects.push(this.AddAsteroid(20));
+                    //this.Objects.push(this.AddAsteroid(20));
                     this.Objects.push(this.AddAsteroid(20));
                 }
             }
@@ -774,24 +827,82 @@ namespace asteroids {
         }
     }
 
-    export function newGame() {
-        let gGame: Game = null;
-        console.log("myNewAnim");
-        let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
-        if (canvas.getContext) {
-            let backcanvas: HTMLCanvasElement = document.createElement('canvas');
-            backcanvas.width = canvas.width;
-            backcanvas.height = canvas.height;
-            let backctx: CanvasRenderingContext2D = backcanvas.getContext('2d');
-            let frontctx: CanvasRenderingContext2D = canvas.getContext('2d');
+    function CreateTouchInputHandlers(gGame: Game, canvas: HTMLCanvasElement)
+    {
+        function touchStartHander(e) {
+            e.preventDefault();
+            if (gGame !== null) {
+                var touches = e.changedTouches;
+                for (let i = 0; i < touches.length; i++) {
+                    let tpos: number[] = [
+                        (touches[i].pageX - canvas.offsetLeft),
+                        (touches[i].pageY - canvas.offsetTop)
+                    ];
 
-            if (gGame === null) {
-                console.log("myNewAnim");
-                gGame = new Game(canvas, backcanvas, frontctx, backctx);
-                let id = setInterval(updateFrame, 60);
+                    for (let i = 0; i < gGame.TouchButtons.length; i++) {
+                        let button: TouchScreenButton = gGame.TouchButtons[i];
+                        let dist: number = Distance(button.pos, tpos);
+                        if (dist < button.size) {
+                            let b: Buttons = gGame.getButtons();
+                            if (button.name === "L") {
+                                b.dir[0] = -1; // to left
+                            } else if (button.name === "U") {
+                                b.dir[1] = 1; // to up
+                            } else if (button.name === "R") {
+                                b.dir[0] = 1; // to right
+                            } else if (button.name === "D") {
+                                b.dir[1] = -1; // to down
+                            } else if (button.name === "F") {
+                                b.fire = 1; // fire
+                            } else if (button.name === "S") {
+                                b.start = 1; // start s key
+                            }
+                            gGame.setButtons(b);
+                        }
+                    }
+                }
             }
         }
 
+        function touchEndHander(e) {
+            e.preventDefault();
+            if (gGame !== null) {
+                var touches = e.changedTouches;
+                for (let i = 0; i < touches.length; i++) {
+                    let tpos: number[] = [
+                        (touches[i].pageX - canvas.offsetLeft),
+                        (touches[i].pageY - canvas.offsetTop)
+                    ];
+
+                    for (let i = 0; i < gGame.TouchButtons.length; i++) {
+                        let button: TouchScreenButton = gGame.TouchButtons[i];
+                        let dist: number = Distance(button.pos, tpos);
+                        if (dist < button.size) {
+                            let b: Buttons = gGame.getButtons();
+                            if (button.name === "L") {
+                                b.dir[0] = 0; // to left
+                            } else if (button.name === "U") {
+                                b.dir[1] = 0; // to up
+                            } else if (button.name === "R") {
+                                b.dir[0] = 0; // to right
+                            } else if (button.name === "D") {
+                                b.dir[1] = 0; // to down
+                            } else if (button.name === "F") {
+                                b.fire = 0; // fire
+                            } else if (button.name === "S") {
+                                b.start = 0; // start s key
+                            }
+                            gGame.setButtons(b);
+                        }
+                    }
+                }
+            }
+        }
+        canvas.addEventListener('touchstart', touchStartHander, false);
+        canvas.addEventListener('touchend', touchEndHander, false);
+    }
+
+    function CreateKeyboardInputHandlers(gGame: Game, canvas: HTMLCanvasElement) {
         document.addEventListener('keyup', function (event) {
             if (gGame !== null) {
                 let b: Buttons = gGame.getButtons();
@@ -831,6 +942,39 @@ namespace asteroids {
                 gGame.setButtons(b);
             }
         });
+    }
+
+    export function newGame() {
+        let gGame: Game = null;
+        console.log("myNewAnim");
+        let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+        if (canvas.getContext) {
+            let w = canvas.clientWidth;
+            let h = canvas.clientHeight;
+            canvas.width = w;
+            canvas.height = h;
+            let backcanvas: HTMLCanvasElement = document.createElement('canvas');
+            backcanvas.width = w;
+            backcanvas.height = h;
+            let backctx: CanvasRenderingContext2D = backcanvas.getContext('2d');
+            let frontctx: CanvasRenderingContext2D = canvas.getContext('2d');
+
+            if (gGame === null) {
+                console.log("myNewAnim");
+                gGame = new Game(canvas, backcanvas, frontctx, backctx);
+                let id = setInterval(updateFrame, 60);
+
+                if (isMobile()) {
+                    CreateTouchInputHandlers(gGame, canvas);
+                }
+                else {
+                    CreateKeyboardInputHandlers(gGame, canvas);
+                }
+                
+            }
+        }
+
+
 
         function updateFrame() {
             gGame.Draw();
@@ -839,4 +983,6 @@ namespace asteroids {
 
 }
 
-window.onload = () => { asteroids.newGame(); }
+window.onload = () => {
+    //asteroids.newGame();
+}

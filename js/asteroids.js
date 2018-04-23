@@ -309,10 +309,27 @@ var asteroids;
         ];
         return { ColPos: colPos, NewPos: newPos, dir: vnew };
     }
+    function isMobile() {
+        var isAndroid = navigator.userAgent.match(/Android/i) !== null;
+        var isiOS = navigator.userAgent.match(/iPhone|iPad|iPod/i) !== null;
+        var isBlackBerry = navigator.userAgent.match(/BlackBerry/i) !== null;
+        var isOpera = navigator.userAgent.match(/Opera Mini/i) !== null;
+        var isWindows = navigator.userAgent.match(/IEMobile/i) !== null;
+        return (isAndroid || isiOS || isBlackBerry || isOpera || isWindows);
+    }
+    var TouchScreenButton = /** @class */ (function () {
+        function TouchScreenButton(name, pos, size) {
+            this.name = name;
+            this.pos = pos;
+            this.size = size;
+        }
+        return TouchScreenButton;
+    }());
     var Game = /** @class */ (function () {
         // Game::Game
         function Game(canvas, backcanvas, frontctx, backctx) {
             this.Objects = [];
+            this.TouchButtons = [];
             this.Canvas = backcanvas;
             this.FrontCanvas = canvas;
             this.Ctx = backctx;
@@ -320,6 +337,7 @@ var asteroids;
             this.ScreenWidth = canvas.width;
             this.ScreenHeight = canvas.height;
             this.reset();
+            this.AddButtons();
         }
         Game.prototype.reset = function (reset_type) {
             if (reset_type === void 0) { reset_type = ""; }
@@ -327,8 +345,8 @@ var asteroids;
             this.Bullets = [];
             this.Objects = [];
             this.Objects.push(this.AddSpaceShip());
-            this.Objects.push(this.AddAsteroid(20));
-            this.Objects.push(this.AddAsteroid(20));
+            //this.Objects.push(this.AddAsteroid(20));
+            //this.Objects.push(this.AddAsteroid(20));
             this.Objects.push(this.AddAsteroid(20));
             if (reset_type === "level_end") {
             }
@@ -337,11 +355,40 @@ var asteroids;
                 this.Level = 0;
             }
         };
+        Game.prototype.AddButtons = function () {
+            if (!isMobile()) {
+                return;
+            }
+            var buttonSize = this.ScreenWidth * 0.03;
+            // the pos of B botton
+            var x = this.ScreenWidth * 0.2;
+            var y = this.ScreenHeight * 0.9;
+            //   U
+            // L D R X   S
+            this.TouchButtons = [];
+            this.TouchButtons.push(new TouchScreenButton("U", [x, y - buttonSize * 4], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("L", [x - buttonSize * 4, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("D", [x, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("R", [x + buttonSize * 4, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("F", [x + buttonSize * 8, y], buttonSize));
+            this.TouchButtons.push(new TouchScreenButton("S", [x + buttonSize * 16, y], buttonSize));
+        };
+        Game.prototype.DrawButtons = function () {
+            var ctx = this.Ctx;
+            for (var i = 0; i < this.TouchButtons.length; i++) {
+                var t = this.TouchButtons[i];
+                ctx.strokeStyle = 'rgb(255, 255, 255)';
+                ctx.beginPath();
+                ctx.arc(t.pos[0], t.pos[1], t.size, 0, 2 * Math.PI);
+                ctx.closePath();
+                ctx.stroke();
+            }
+        };
         // game::AddSpaceShip
         Game.prototype.AddSpaceShip = function () {
             var sizeSpaceShip = 5;
             var x = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
-            var y = randomInt(sizeSpaceShip, this.ScreenWidth - sizeSpaceShip);
+            var y = randomInt(sizeSpaceShip, this.ScreenHeight - sizeSpaceShip);
             var rot = randomInt(0, 359);
             var rotRad = rot * Math.PI / 180;
             var sin = Math.sin(rotRad);
@@ -647,12 +694,13 @@ var asteroids;
                 this.drawBullets();
                 this.bulletsVsAsteroids();
                 this.shipVsAsteroids();
+                this.DrawButtons();
                 if (this.ConButtons.start) {
                     ship.dead = false;
                     ship.speed = 0;
                     this.Objects.splice(1, this.Objects.length - 1);
-                    this.Objects.push(this.AddAsteroid(20));
-                    this.Objects.push(this.AddAsteroid(20));
+                    //this.Objects.push(this.AddAsteroid(20));
+                    //this.Objects.push(this.AddAsteroid(20));
                     this.Objects.push(this.AddAsteroid(20));
                 }
             }
@@ -693,22 +741,87 @@ var asteroids;
         };
         return Game;
     }());
-    function newGame() {
-        var gGame = null;
-        console.log("myNewAnim");
-        var canvas = document.getElementById('canvas');
-        if (canvas.getContext) {
-            var backcanvas = document.createElement('canvas');
-            backcanvas.width = canvas.width;
-            backcanvas.height = canvas.height;
-            var backctx = backcanvas.getContext('2d');
-            var frontctx = canvas.getContext('2d');
-            if (gGame === null) {
-                console.log("myNewAnim");
-                gGame = new Game(canvas, backcanvas, frontctx, backctx);
-                var id = setInterval(updateFrame, 60);
+    function CreateTouchInputHandlers(gGame, canvas) {
+        function touchStartHander(e) {
+            e.preventDefault();
+            if (gGame !== null) {
+                var touches = e.changedTouches;
+                for (var i = 0; i < touches.length; i++) {
+                    var tpos = [
+                        (touches[i].pageX - canvas.offsetLeft),
+                        (touches[i].pageY - canvas.offsetTop)
+                    ];
+                    for (var i_1 = 0; i_1 < gGame.TouchButtons.length; i_1++) {
+                        var button = gGame.TouchButtons[i_1];
+                        var dist = Distance(button.pos, tpos);
+                        if (dist < button.size) {
+                            var b = gGame.getButtons();
+                            if (button.name === "L") {
+                                b.dir[0] = -1; // to left
+                            }
+                            else if (button.name === "U") {
+                                b.dir[1] = 1; // to up
+                            }
+                            else if (button.name === "R") {
+                                b.dir[0] = 1; // to right
+                            }
+                            else if (button.name === "D") {
+                                b.dir[1] = -1; // to down
+                            }
+                            else if (button.name === "F") {
+                                b.fire = 1; // fire
+                            }
+                            else if (button.name === "S") {
+                                b.start = 1; // start s key
+                            }
+                            gGame.setButtons(b);
+                        }
+                    }
+                }
             }
         }
+        function touchEndHander(e) {
+            e.preventDefault();
+            if (gGame !== null) {
+                var touches = e.changedTouches;
+                for (var i = 0; i < touches.length; i++) {
+                    var tpos = [
+                        (touches[i].pageX - canvas.offsetLeft),
+                        (touches[i].pageY - canvas.offsetTop)
+                    ];
+                    for (var i_2 = 0; i_2 < gGame.TouchButtons.length; i_2++) {
+                        var button = gGame.TouchButtons[i_2];
+                        var dist = Distance(button.pos, tpos);
+                        if (dist < button.size) {
+                            var b = gGame.getButtons();
+                            if (button.name === "L") {
+                                b.dir[0] = 0; // to left
+                            }
+                            else if (button.name === "U") {
+                                b.dir[1] = 0; // to up
+                            }
+                            else if (button.name === "R") {
+                                b.dir[0] = 0; // to right
+                            }
+                            else if (button.name === "D") {
+                                b.dir[1] = 0; // to down
+                            }
+                            else if (button.name === "F") {
+                                b.fire = 0; // fire
+                            }
+                            else if (button.name === "S") {
+                                b.start = 0; // start s key
+                            }
+                            gGame.setButtons(b);
+                        }
+                    }
+                }
+            }
+        }
+        canvas.addEventListener('touchstart', touchStartHander, false);
+        canvas.addEventListener('touchend', touchEndHander, false);
+    }
+    function CreateKeyboardInputHandlers(gGame, canvas) {
         document.addEventListener('keyup', function (event) {
             if (gGame !== null) {
                 var b = gGame.getButtons();
@@ -757,11 +870,40 @@ var asteroids;
                 gGame.setButtons(b);
             }
         });
+    }
+    function newGame() {
+        var gGame = null;
+        console.log("myNewAnim");
+        var canvas = document.getElementById('canvas');
+        if (canvas.getContext) {
+            var w = canvas.clientWidth;
+            var h = canvas.clientHeight;
+            canvas.width = w;
+            canvas.height = h;
+            var backcanvas = document.createElement('canvas');
+            backcanvas.width = w;
+            backcanvas.height = h;
+            var backctx = backcanvas.getContext('2d');
+            var frontctx = canvas.getContext('2d');
+            if (gGame === null) {
+                console.log("myNewAnim");
+                gGame = new Game(canvas, backcanvas, frontctx, backctx);
+                var id = setInterval(updateFrame, 60);
+                if (isMobile()) {
+                    CreateTouchInputHandlers(gGame, canvas);
+                }
+                else {
+                    CreateKeyboardInputHandlers(gGame, canvas);
+                }
+            }
+        }
         function updateFrame() {
             gGame.Draw();
         }
     }
     asteroids.newGame = newGame;
 })(asteroids || (asteroids = {}));
-window.onload = function () { asteroids.newGame(); };
+window.onload = function () {
+    //asteroids.newGame();
+};
 //# sourceMappingURL=asteroids.js.map
