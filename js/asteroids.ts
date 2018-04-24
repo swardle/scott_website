@@ -344,7 +344,8 @@ namespace asteroids {
     }
 
 
-    function isMobile(): boolean {
+    /*
+    function isMobile2(): boolean {
         let isAndroid = navigator.userAgent.match(/Android/i) !== null;
         let isiOS = navigator.userAgent.match(/iPhone|iPad|iPod/i) !== null;
         let isBlackBerry = navigator.userAgent.match(/BlackBerry/i) !== null;
@@ -352,7 +353,12 @@ namespace asteroids {
         let isWindows = navigator.userAgent.match(/IEMobile/i) !== null;
         return (isAndroid || isiOS || isBlackBerry || isOpera || isWindows);
     }
+    */
 
+    function isMobile(): boolean {
+        let isMobile:boolean = navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|Opera Mini|IEMobile/i) !== null;
+        return (isMobile);
+    }
 
     class TouchScreenButton {
         constructor(public name: string, public pos: number[], public size: number) {
@@ -980,7 +986,12 @@ namespace asteroids {
             gGame.Draw();
         }
     }
-    export function HtmlButtonDown(button, type) {
+
+    export function DoNothing(e){
+        e.preventDefault();        
+    }
+
+    export function HtmlButtonDown(button, type, e) {
         if (gGame !== null /* &&
             isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
@@ -999,9 +1010,10 @@ namespace asteroids {
                 b.start = 1; // start s key
             }
             gGame.setButtons(b);
+            e.preventDefault();
         }
     }
-    export function HtmlButtonUp(button, type) {
+    export function HtmlButtonUp(button, type, e) {
         if (gGame !== null /* &&
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
@@ -1020,6 +1032,7 @@ namespace asteroids {
                 b.start = 0; // start s key
             }
             gGame.setButtons(b);
+            e.preventDefault();
         }
     }
 }

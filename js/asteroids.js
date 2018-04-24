@@ -310,13 +310,19 @@ var asteroids;
         ];
         return { ColPos: colPos, NewPos: newPos, dir: vnew };
     }
-    function isMobile() {
-        var isAndroid = navigator.userAgent.match(/Android/i) !== null;
-        var isiOS = navigator.userAgent.match(/iPhone|iPad|iPod/i) !== null;
-        var isBlackBerry = navigator.userAgent.match(/BlackBerry/i) !== null;
-        var isOpera = navigator.userAgent.match(/Opera Mini/i) !== null;
-        var isWindows = navigator.userAgent.match(/IEMobile/i) !== null;
+    /*
+    function isMobile2(): boolean {
+        let isAndroid = navigator.userAgent.match(/Android/i) !== null;
+        let isiOS = navigator.userAgent.match(/iPhone|iPad|iPod/i) !== null;
+        let isBlackBerry = navigator.userAgent.match(/BlackBerry/i) !== null;
+        let isOpera = navigator.userAgent.match(/Opera Mini/i) !== null;
+        let isWindows = navigator.userAgent.match(/IEMobile/i) !== null;
         return (isAndroid || isiOS || isBlackBerry || isOpera || isWindows);
+    }
+    */
+    function isMobile() {
+        var isMobile = navigator.userAgent.match(/Android|iPhone|iPad|iPod|BlackBerry|Opera Mini|IEMobile/i) !== null;
+        return (isMobile);
     }
     var TouchScreenButton = /** @class */ (function () {
         function TouchScreenButton(name, pos, size) {
@@ -905,7 +911,11 @@ var asteroids;
         }
     }
     asteroids.newGame = newGame;
-    function HtmlButtonDown(button, type) {
+    function DoNothing(e) {
+        e.preventDefault();
+    }
+    asteroids.DoNothing = DoNothing;
+    function HtmlButtonDown(button, type, e) {
         if (gGame !== null /* &&
             isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
@@ -929,10 +939,11 @@ var asteroids;
                 b.start = 1; // start s key
             }
             gGame.setButtons(b);
+            e.preventDefault();
         }
     }
     asteroids.HtmlButtonDown = HtmlButtonDown;
-    function HtmlButtonUp(button, type) {
+    function HtmlButtonUp(button, type, e) {
         if (gGame !== null /* &&
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
@@ -956,6 +967,7 @@ var asteroids;
                 b.start = 0; // start s key
             }
             gGame.setButtons(b);
+            e.preventDefault();
         }
     }
     asteroids.HtmlButtonUp = HtmlButtonUp;
