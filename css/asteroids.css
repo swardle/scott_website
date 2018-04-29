@@ -1,0 +1,27 @@
+    .no-context-body {
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+    }
+    
+    .no-context-div {
+        background: #1d077c;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+    }
+    
+    .game-canvas {
+        background: #4e0ad6;
+        width: 100%;
+        display: block;
+        margin: 0 auto;
+    }
+    
+    .game-button {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .game-button-dummy {
+        width: 45px;
+        height: 45px;
+    }

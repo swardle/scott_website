@@ -987,8 +987,9 @@ namespace asteroids {
         }
     }
 
-    export function DoNothing(e){
-        e.preventDefault();        
+    export function DoNothing(e) : boolean {
+        e.preventDefault();  
+        return false;      
     }
 
     export function HtmlButtonDown(button, type, e) {

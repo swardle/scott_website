@@ -913,6 +913,7 @@ var asteroids;
     asteroids.newGame = newGame;
     function DoNothing(e) {
         e.preventDefault();
+        return false;
     }
     asteroids.DoNothing = DoNothing;
     function HtmlButtonDown(button, type, e) {
