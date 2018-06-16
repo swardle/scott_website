@@ -956,6 +956,7 @@ namespace asteroids {
     export function newGame() {
         console.log("myNewAnim");
         let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById('canvas');
+        // let canvasContainer = document.getElementById('CanvasContainer');
         if (canvas.getContext) {
             let w = canvas.clientWidth;
             let h = canvas.clientHeight;

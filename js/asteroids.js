@@ -884,6 +884,7 @@ var asteroids;
     function newGame() {
         console.log("myNewAnim");
         var canvas = document.getElementById('canvas');
+        // let canvasContainer = document.getElementById('CanvasContainer');
         if (canvas.getContext) {
             var w = canvas.clientWidth;
             var h = canvas.clientHeight;

@@ -1,27 +1,30 @@
-    .no-context-body {
-        -webkit-touch-callout: none !important;
-        -webkit-user-select: none !important;
-    }
-    
-    .no-context-div {
-        background: #1d077c;
-        -webkit-touch-callout: none !important;
-        -webkit-user-select: none !important;
-    }
-    
-    .game-canvas {
-        background: #4e0ad6;
-        width: 100%;
-        display: block;
-        margin: 0 auto;
-    }
-    
-    .game-button {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .game-button-dummy {
-        width: 45px;
-        height: 45px;
-    }
+.container {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto;
+    grid-template-rows: 200px;
+    grid-gap: 1em;
+    grid-template-areas: "header header header header header header header" "game game game game game game game" "button-dummy button-dummy button-dummy button button-dummy button-dummy button-dummy" "button-dummy button button button button button button-dummy";
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+}
+
+.game-canvas {
+    /* grid-area: game; */
+    background: red;
+}
+
+.game-button {
+    /* grid-area: button; */
+    background: #4e0a;
+}
+
+.game-button-dummy {
+    /* grid-area: button-dummy; */
+    background: #4e0;
+}
+
+.game-header {
+    /* grid-area: header; */
+    background: #553355;
+}
