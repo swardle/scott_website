@@ -29,7 +29,6 @@
         ga('create', 'UA-106127893-1', 'auto');
         ga('send', 'pageview');
     </script>
-    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=cpp&amp;skin=sunburst"></script>
 </head>
 
 <body class="animsition">
@@ -37,24 +36,24 @@
         <header class="header_top blog">
             <div class="hamburgler-menu">
                 <ul class="hamburgler-menu-list">
-                    <li><a class="animsition-link " href="index.html">HOME</a></li>
-                    <li><a class="animsition-link " href="blog.html">BLOG</a></li>
-                    <li><a class="animsition-link " href="about.html">ABOUT</li>
-                    <li><a class="animsition-link " href="contact.html">CONTACT</a></li>
-                    <li><a class="animsition-link " href="presentation.html">PRESENTATION</a></li>
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
                 </ul>
             </div>
-            <div id="hamburgler " class="hamburgler-icon-wrapper">
+            <div id="hamburgler" class="hamburgler-icon-wrapper">
                 <span class="hamburgler-icon"></span>
             </div>
-            <a href="index.html"><img src="img/logo.png " class="logo"></a>
+            <a href="index.html"><img src="img/logo.png" class="logo"></a>
             <nav>
                 <ul class="main_nav">
-                    <li><a class="animsition-link " href="index.html">HOME</a></li>
-                    <li><a class="animsition-link " href="blog.html">BLOG</a></li>
-                    <li><a class="animsition-link " href="about.html">ABOUT</a></li>
-                    <li><a class="animsition-link " href="contact.html">CONTACT</a></li>
-                    <li><a class="animsition-link " href="presentation.html">PRESENTATION</a></li>
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</a></li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
                 </ul>
             </nav>
             <div class="absoluteContainer">
@@ -66,21 +65,21 @@
         <div id="wrapper">
             <aside>
                 <div class="social_media_side">
-                    <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter " aria-hidden="true"></i></a>
-                    <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin " aria-hidden="true"></i></a>
+                    <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                    <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
                 </div>
                 <h3>RECENT POST</h3>
                 <ul class="list_blog_title">
-                    <li><i class="fa fa-pencil " aria-hidden="true"></i>&nbsp;<a href="blog4.html">Science at C++NOW</a>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog4.html">Science at C++NOW</a>
                     </li>
                     <br>
-                    <li><i class="fa fa-pencil " aria-hidden="true"></i>&nbsp;<a href="blog3.html">Belated review of CPPCON</a>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog3.html">Belated review of CPPCON</a>
                     </li>
                     <br>
-                    <li><i class="fa fa-pencil " aria-hidden="true"></i>&nbsp;<a href="blog2.html">Waiting for genus</a>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog2.html">Waiting for genus</a>
                     </li>
                     <br>
-                    <li><i class="fa fa-pencil " aria-hidden="true"></i>&nbsp;<a href="blog1.html">My start in programming</a>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog1.html">My start in programming</a>
                     </li>
                     <br>
                 </ul>
@@ -92,7 +91,7 @@
                         <p>
                             <time datetime="2018-06-10">June 10, 2018</time>
                         </p>
-                        <img src="img/23.png " class="blog_img">
+                        <img src="img/23.png" class="blog_img">
                     </header>
                     <p>I finally went to <a href="http://cppnow.org/">C++Now</a>. I have been told it is the place to see the science of C++ happening. The best and the brightest in the C++ community try to push the language forward. I feel it is more science
                         then engineering because of the ways ideas are floated out here to see if they catch on or fail. You will see the audience participating, by catching mistakes or explaining problems that the presenter might not have thought of,
@@ -190,15 +189,26 @@
                         well you might like to see how people interact. The idea that Gasper (and his co-writers) is if you add the “this” key word to a function prototype you might be able to do some cool things. IE what if you could do things like this.
                     </p>
                     <p>
-                        <pre class="prettyprint">class MyClass 
-{ 
-    template <U> void foo(this U&& self) {}
-};                     
-                    </pre></U>
+                        <pre>
+                            
+temptate <typename T> 
+    class optional 
+    {
+        // ...
+        template <typename U> constexpr decltype(auto) value (this U && self) 
+        { 
+            if(has_value()) // self.has_value()
+            {
+                return std::forward&lt;U&gt;(self).m_value;
+            }
+            throw bad_optional_access();
+        }
+    };                 
+                    </pre>
                     </p>
                     <p>Could you call this function like a normal non-member? You could make “self” different from “this” to make the
                         <a href="https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern" target="_blank">curiously recurring template pattern</a> better. You can also use the extra template data to get rid of a copy that sometimes happens
-                        with get functions so you can make the correct version for rvalue vs lvalue etc...
+                        with get functions so you can make the correct version for rvalue vs lvalue etc... only the last point is the one Gašper really wants but it is fun to think about the other ideas and see if we can punch holes in them.
                     </p>
 
                     <p><b><a href="https://www.youtube.com/watch?v=2ouxETt75R4" target="_blank">Ben Deane “Easy to Use, Hard to Misuse: Declarative Style in C++"</a></b>
@@ -281,8 +291,8 @@ s.run(timer, task);
                 <li><a href="presentation.html">PRESENTATION</a></li>
             </ul>
             <div class="social_media">
-                <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter " aria-hidden="true"></i></a>
-                <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin " aria-hidden="true"></i></a>
+                <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
             </div>
             <p>&copy; SCOTT WARDLE 2018</p>
         </footer>
@@ -293,7 +303,6 @@ s.run(timer, task);
     <script src="js/name_anim.js"></script>
     <script>
         $(document).ready(function() {
-            PR.prettyPrint();
             $('.animsition').animsition();
         });
     </script>
