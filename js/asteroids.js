@@ -922,22 +922,22 @@ var asteroids;
             isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
-            if (button.name === "L") {
+            if (button.id === "L") {
                 b.dir[0] = -1; // to left
             }
-            else if (button.name === "U") {
+            else if (button.id === "U") {
                 b.dir[1] = 1; // to up
             }
-            else if (button.name === "R") {
+            else if (button.id === "R") {
                 b.dir[0] = 1; // to right
             }
-            else if (button.name === "D") {
+            else if (button.id === "D") {
                 b.dir[1] = -1; // to down
             }
-            else if (button.name === "F") {
+            else if (button.id === "F") {
                 b.fire = 1; // fire
             }
-            else if (button.name === "S") {
+            else if (button.id === "S") {
                 b.start = 1; // start s key
             }
             gGame.setButtons(b);
@@ -950,22 +950,22 @@ var asteroids;
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
-            if (button.name === "L") {
+            if (button.id === "L") {
                 b.dir[0] = 0; // to left
             }
-            else if (button.name === "U") {
+            else if (button.id === "U") {
                 b.dir[1] = 0; // to up
             }
-            else if (button.name === "R") {
+            else if (button.id === "R") {
                 b.dir[0] = 0; // to right
             }
-            else if (button.name === "D") {
+            else if (button.id === "D") {
                 b.dir[1] = 0; // to down
             }
-            else if (button.name === "F") {
+            else if (button.id === "F") {
                 b.fire = 0; // fire
             }
-            else if (button.name === "S") {
+            else if (button.id === "S") {
                 b.start = 0; // start s key
             }
             gGame.setButtons(b);
