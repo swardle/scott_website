@@ -380,20 +380,6 @@ var asteroids;
             this.TouchButtons.push(new TouchScreenButton("F", [x + buttonSize * 7, y], buttonSize));
             this.TouchButtons.push(new TouchScreenButton("S", [x + buttonSize * 12, y], buttonSize));
         };
-        Game.prototype.DrawButtons = function () {
-            var ctx = this.Ctx;
-            for (var i = 0; i < this.TouchButtons.length; i++) {
-                var t = this.TouchButtons[i];
-                ctx.strokeStyle = 'rgb(255, 255, 255)';
-                ctx.beginPath();
-                ctx.arc(t.pos[0], t.pos[1], t.size, 0, 2 * Math.PI);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.font = "30px";
-                ctx.fillStyle = 'rgb(255, 255, 255)';
-                ctx.fillText(t.name, t.pos[0] - 3, t.pos[1] + 3);
-            }
-        };
         // game::AddSpaceShip
         Game.prototype.AddSpaceShip = function () {
             var sizeSpaceShip = 5;
@@ -738,7 +724,6 @@ var asteroids;
                     ship.dead = false;
                 }
             }
-            this.DrawButtons();
             //render the buffered canvas onto the original canvas element
             this.FrontCtx.drawImage(this.Canvas, 0, 0);
         };
@@ -751,86 +736,6 @@ var asteroids;
         };
         return Game;
     }());
-    function CreateTouchInputHandlers(gGame, canvas) {
-        function touchStartHander(e) {
-            e.preventDefault();
-            if (gGame !== null) {
-                var touches = e.changedTouches;
-                for (var i = 0; i < touches.length; i++) {
-                    var tpos = [
-                        (touches[i].pageX - canvas.offsetLeft),
-                        (touches[i].pageY - canvas.offsetTop)
-                    ];
-                    for (var i_1 = 0; i_1 < gGame.TouchButtons.length; i_1++) {
-                        var button = gGame.TouchButtons[i_1];
-                        var dist = Distance(button.pos, tpos);
-                        if (dist < button.size) {
-                            var b = gGame.getButtons();
-                            if (button.name === "L") {
-                                b.dir[0] = -1; // to left
-                            }
-                            else if (button.name === "U") {
-                                b.dir[1] = 1; // to up
-                            }
-                            else if (button.name === "R") {
-                                b.dir[0] = 1; // to right
-                            }
-                            else if (button.name === "D") {
-                                b.dir[1] = -1; // to down
-                            }
-                            else if (button.name === "F") {
-                                b.fire = 1; // fire
-                            }
-                            else if (button.name === "S") {
-                                b.start = 1; // start s key
-                            }
-                            gGame.setButtons(b);
-                        }
-                    }
-                }
-            }
-        }
-        function touchEndHander(e) {
-            e.preventDefault();
-            if (gGame !== null) {
-                var touches = e.changedTouches;
-                for (var i = 0; i < touches.length; i++) {
-                    var tpos = [
-                        (touches[i].pageX - canvas.offsetLeft),
-                        (touches[i].pageY - canvas.offsetTop)
-                    ];
-                    for (var i_2 = 0; i_2 < gGame.TouchButtons.length; i_2++) {
-                        var button = gGame.TouchButtons[i_2];
-                        var dist = Distance(button.pos, tpos);
-                        if (dist < button.size) {
-                            var b = gGame.getButtons();
-                            if (button.name === "L") {
-                                b.dir[0] = 0; // to left
-                            }
-                            else if (button.name === "U") {
-                                b.dir[1] = 0; // to up
-                            }
-                            else if (button.name === "R") {
-                                b.dir[0] = 0; // to right
-                            }
-                            else if (button.name === "D") {
-                                b.dir[1] = 0; // to down
-                            }
-                            else if (button.name === "F") {
-                                b.fire = 0; // fire
-                            }
-                            else if (button.name === "S") {
-                                b.start = 0; // start s key
-                            }
-                            gGame.setButtons(b);
-                        }
-                    }
-                }
-            }
-        }
-        canvas.addEventListener('touchstart', touchStartHander, false);
-        canvas.addEventListener('touchend', touchEndHander, false);
-    }
     function CreateKeyboardInputHandlers(gGame, canvas) {
         document.addEventListener('keyup', function (event) {
             if (gGame !== null) {
@@ -900,7 +805,7 @@ var asteroids;
                 gGame = new Game(canvas, backcanvas, frontctx, backctx);
                 var id = setInterval(updateFrame, 60);
                 if (isMobile()) {
-                    CreateTouchInputHandlers(gGame, canvas);
+                    // CreateTouchInputHandlers(gGame, canvas);
                 }
                 else {
                     CreateKeyboardInputHandlers(gGame, canvas);
@@ -950,7 +855,7 @@ var asteroids;
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
-            if (button.id === "L") {
+            if (button.idgit === "L") {
                 b.dir[0] = 0; // to left
             }
             else if (button.id === "U") {
