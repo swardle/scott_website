@@ -447,6 +447,38 @@ a.back_link{
 }
 
 
+/********************** Game **********************/
+
+header#scoreboard, .game-button{
+    background: #e5e4e4;
+    padding: 18px;
+}
+
+.fa.fa-caret-up, .fa.fa-caret-down, .fa.fa-caret-left, .fa.fa-caret-right{
+    font-size:3em;
+}
+
+.fa-caret-up:before {
+    content: "\f0d8";
+    position: relative;
+    top: -20px;
+    right: -3px;
+}
+
+.fa-caret-down:before {
+    content: "\f0d7";
+    position: relative;
+    bottom: -14px;
+    left: -28px;
+}
+
+.fa-caret-right:before {
+    content: "\f0da";
+    position: relative;
+    left: -23px;
+}
+
+
 /********************** media query **********************/
 
 @media(max-width:2560px){
