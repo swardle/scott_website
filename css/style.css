@@ -449,7 +449,7 @@ a.back_link{
 
 /********************** Game **********************/
 
-header#scoreboard, .game-directionpad{
+header#scoreboard{
     background: #e5e4e4;
     padding: 18px;
 }
@@ -477,6 +477,35 @@ header#scoreboard, .game-directionpad{
     position: relative;
     left: -23px;
 }
+
+
+.game-pad{
+    width: 100%;
+    background: #e5e4e4;
+    padding:20px 0 20px 0;
+    text-align:center;
+
+}
+
+.game-pad div{
+    display: inline-block;
+}
+
+.pad1{
+    float:left;
+    padding-left: 20px;
+}
+
+.pad2{
+    padding-right: 40px;
+}
+
+.pad3{
+    float:right;
+    padding-right: 20px;
+}
+
+
 
 
 /********************** media query **********************/
@@ -620,7 +649,44 @@ header#scoreboard, .game-directionpad{
     height: 100%;
 }
 
-
-
-    
+.fa.fa-caret-up, .fa.fa-caret-down, .fa.fa-caret-left, .fa.fa-caret-right{
+    font-size:2.5em;
 }
+
+/*.game-pad{
+    text-align: justify;
+}*/
+
+.game-pad img{
+    width:80px;
+}
+
+
+
+.pad3 img{
+    width:42px;
+}
+
+.fa-caret-down:before{
+    position: relative;
+    bottom: -14px;
+    left: -25px;
+}
+
+}
+
+@media(max-width: 375px){
+  .pad2 img {
+    width: 70px;
+}
+}
+
+@media(max-width: 355px){
+    .pad2{
+        padding-right:0;
+        position:relative;
+        right: 15px;
+    }
+}
+
+
