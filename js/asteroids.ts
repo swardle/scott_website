@@ -924,12 +924,13 @@ namespace asteroids {
             e.preventDefault();
         }
     }
+    
     export function HtmlButtonUp(button, type, e) {
         if (gGame !== null /* &&
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
             let b: Buttons = gGame.getButtons();
-            if (button.idgit  === "L") {
+            if (button.id  === "L") {
                 b.dir[0] = 0; // to left
             } else if (button.id === "U") {
                 b.dir[1] = 0; // to up

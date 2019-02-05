@@ -855,7 +855,7 @@ var asteroids;
            (isMobile() && type === "touch") ||
         (!isMobile() && type === "mouse")*/) {
             var b = gGame.getButtons();
-            if (button.idgit === "L") {
+            if (button.id === "L") {
                 b.dir[0] = 0; // to left
             }
             else if (button.id === "U") {
