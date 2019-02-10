@@ -1,0 +1,240 @@
+﻿<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Scott Wardle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Scott Wardle, Software Engineer at EA, known for C++, systems programming, dyslexic, visualization, metrics, Japanophile.">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,500,700">
+    <link rel="stylesheet" type="text/css" href="css/menu.css">
+    <link href="dist/css/animsition.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script>
+        (function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-106127893-1', 'auto');
+        ga('send', 'pageview');
+    </script>
+</head>
+
+<body class="animsition">
+    <div class="container">
+        <header class="header_top blog">
+            <div class="hamburgler-menu">
+                <ul class="hamburgler-menu-list">
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
+                </ul>
+            </div>
+            <div id="hamburgler" class="hamburgler-icon-wrapper">
+                <span class="hamburgler-icon"></span>
+            </div>
+            <a href="index.html"><img src="img/logo.png" class="logo"></a>
+            <nav>
+                <ul class="main_nav">
+                    <li><a class="animsition-link" href="index.html">HOME</a></li>
+                    <li><a class="animsition-link" href="blog.html">BLOG</a></li>
+                    <li><a class="animsition-link" href="about.html">ABOUT</a></li>
+                    <li><a class="animsition-link" href="contact.html">CONTACT</a></li>
+                    <li><a class="animsition-link" href="presentation.html">PRESENTATION</a></li>
+                </ul>
+            </nav>
+            <div class="absoluteContainer">
+                <div id="page_title">
+                    Blog
+                </div>
+            </div>
+        </header>
+        <div id="wrapper">
+            <aside>
+                <div class="social_media_side">
+                    <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                    <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+                </div>
+                <h3>RECENT POST</h3>
+                <ul class="list_blog_title">
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog4.html">Science at C++NOW</a>
+                    </li>
+                    <br>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog3.html">Belated review of CPPCON</a>
+                    </li>
+                    <br>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog2.html">Waiting for genus</a>
+                    </li>
+                    <br>
+                    <li><i class="fa fa-pencil" aria-hidden="true"></i>&nbsp;<a href="blog1.html">My start in programming</a>
+                    </li>
+                    <br>
+                </ul>
+            </aside>
+            <section>
+                <article class="blog_list">
+                    <header>
+                        <h2>Making debuggers work with constexpr functions</h2>
+                        <p>
+                            <time datetime="2019-02-10">Feb 10, 2019</time>
+                        </p>
+                        <img src="img/23.png" class="blog_img">
+                    </header>
+                        <p>
+                            I am always coming up with ideas and I have a hard time putting them down. Currently I am waiting for a VISA for my next adventure, so I have some time to write a blog entry. Maybe by writing this idea down it will let me think about other things. This idea I have is a way to debug constexpr functions or other functions that have been 100% removed from the EXE and do this in a way that has very little overhead.  
+                        </p>
+                        <p>
+                            I have been working as a C++ programmer for over 25 years. Normally I would say people might want to listen to even my crazy ideas. This idea is a little out of my comfort zone. I have never worked on a compiler or a debugger so me talking about how to write a new type of one is probably not the best idea. The idea comes from a debugger I saw written so even if ideas are cheap without implementations this idea is also cheap to write down and to understand so I hope this idea could be useful to you. 
+                        </p>
+                        <p>
+                            I think everyone feels C++ is getting harder to debug, and by debug here I mean to watch a bug in slow motion in a debugger. I use debuggers to help me read other people code or make sure my own unit tests are running correctly when I first write them.  With C++ “constexpr all of the things” libraries and crazy smart optimizing compilers this is getting harder to do.  So how could we fix this you can’t debug a constexpr function can you? 
+                        </p>
+
+                        <p>
+                            Let's start with a short summary about how a break point works in a debugger? A break point switches one instruction for a int 3 break or other illegal instruction. The CPU has an exception at this illegal instruction and in the exception, you gather all of the state for the debugger and save everything so you could continue again when you trace to the next instruction or set of instructions. The debugger read this saved state of CPUs registers and combine this with compliers debugging symbols and type information so you can view data in a watch window and see your call stacks etc.
+                        </p>
+                        <p>
+                            The problem is with constexpr functions there is no instructions, no CPU or memory state to read or really anything to debug at all in the runtime. Well there is the return value side effect of the constexpr functions but that is it. Today if we work at it enough we can find these return values a constexpr function, but you can’t always tell why it is this value.  If  you are trying to write a JSON or REGEX parser or you are debugging taylor series in a constexpr Sin or Cos function this might be good to watch in slow motion. 
+                        </p>
+                        <p>
+                            We could replace a constexpr functions return value with the code needed to create this constexpr return value. We don't want to do this all of the time as that would slow down our program. So let's have 2 ways of running a constexpr functions: one where we “step over” our constexpr function and just use the pre calulated return value of the function and another “step into” mode where we run code on a "virtual compile time machine” that has no side effect to the main CPU program but shows you why the return value is the value it is.  It would be useful if we could set a break point in this "virtual compile time machine” and it would break in this function everytime we called the constexpr functions. Then we could get a mixed CPU + "virtual compile time machine” call stack. 
+                        </p>
+                        <p>
+                            So treat constexpr (and other optimized away functions) as if they were synchronous functions on some co-processor. This constexpr co-processor uses another memory space so there can be no side effects between the CPU world and the constexpr world. You use use the pre cached return values most of the time but if you trace into a function, you run the constexpr function on this virtual co-processor that has no side effects but it shows you why this return value is what it is. 
+                        </p>
+                        <p>
+                            Since I am an old school game programmer. I think of it as adding break points to PS2 VPU0 function. Maybe VPU is a good name for this process. Where VPU is a "virtual processing unit" not a "vector processing unit". In normal running of your program you don’t need this VPU program it just stays in the programs debug data on disk. No CPU memory is taken up no code space or anything. You just need the return value. The constexpr function has no side effects that is why the work could be moved to this VPU in the first place.  If you add a break point to the VPU code a real break point exception instruction would also be added at this return value location. When you hit this real break point the flow of code would be transferred to the VPU constexpr co-processor. This now loaded VPU program would have a break point added to it as well.  Once you hit the VPU break point you would show the state of the real CPU and the virtual VPU. The runtime cost of this system would be the cost of the virtual VPU co-processor. In an OS this could be in another process, in small embedded devices you could run this VPU co-processor on the host debugger and not on the small 8-bit embedded device with 512 bytes of ram. 
+                        </p>
+                        <p>
+                            How about a more detail example with some code. 
+                        </p>
+                        <p>
+                            Let’s just say we gave the compiler an easy problem to solve.  We call a lambda that all it does is return 40 twice and add it up like the code below. 
+                        </p>
+                        <pre>
+
+using tcallback = int(*)();
+int runCallBack(tcallback func)
+{
+    return func() + func();
+}
+
+int main(int argc, char *argv[])
+{
+    return runCallBack([]() {
+        return 40;
+    });
+}
+
+                        </pre>
+
+                        <p>
+                            Hopefully the compiler can see though all of the abstractions I have put in its way and we should get some ASM generated like below.  The return value of the constexpr is at instruction address 0x8000. 
+                        </p>
+
+                        <pre>
+main: # @main
+0x8000:  mov eax, 80
+ret
+                        </pre>
+                        <p>
+                            Our goal is if we set a break point in runCallBack that I could even though runCallBack does not get called. To implement the break point we write an int 3 over the mov eax, 80.  When the computer hit this break the code would then be controlled by the debugger. The debugger could have a table of instructions address to the compilers debug VPU code. 
+                        </p>
+                        <pre>
+main: # @main
+0x8000:  int 3 // was mov eax, 80
+ret
+                        </pre>
+
+                        <p>
+                            We would need some type of table of instructions address to VPU code address to know how to jump from CPU space to the VPU co-processor space. 
+                        <pre>
+0x8000: 0xffffffff60000000
+                        </pre>
+
+                        </p>
+                            Note that VPU address are not CPU addresses and are not really addressable by the CPU as they don’t really need to exist to make the program run.  They are like addresses in another process space.  Maybe just for debugging you would want addresses that can’t exist in the CPU address space just so you can never make the mistake. 
+                        <p>
+                        <p>
+                            So what would be at VPU address 0xffffffff60000000 well the code that the compiler rightly optimized out. Maybe it would look like the code below.                             
+                        </p>                            
+                        <pre>
+0xffffffff60000000:
+mov edi, offset main::$_0::__invoke()
+jmp runCallBack(int (*)())
+main::$_0::__invoke(): # @"main::$_0::__invoke()"
+mov eax, 40
+ret
+runCallBack(int (*)()): # @runCallBack(int (*)())
+push rbp
+push rbx
+push rax
+mov rbx, rdi
+call rdi
+mov ebp, eax
+call rbx
+add eax, ebp
+add rsp, 8
+pop rbx
+pop rbp
+ret
+                        </pre>                            
+                        <p>
+                            This VPU code does not have to be intel instructions it could be clang IR or JVM or any other instruction set. When you call into this VPU ASM you would just make sure that no state could leak out. So it would be like this VPU was running on another virtual computer.                             
+                        </p>
+                        <p>
+                            You need the VPU ASM code so you have somewhere to set break points that you can step though this code if you want to. If you wanted to break just in between the 2 lambdas no problem.  Just set your VPU break point at that VPU ASM location and also set a real int 3 break point at each call site so the debugger can switch to the interpreted VPU code to search for the VPU break point.                             
+                        </p>
+                        <p>
+                            This can’t help all of C++ current debugging problems. Debuggers are getting harder to understand as compilers get better at reordering things as well. I don’t think that can help with this problem.  But if we want to add meta classes or something crazy like that we need to consider how we will slow things down so humans can read each other’s code. 
+                        </p>
+                        <p>
+                            Also I don’t really know what to do with side effects here. Maybe VPU code should have no side effects just like constexpr code now. Maybe VPU code can jump back to CPU code to call print or do file IO. A call to a constexpr VPU function maybe looks like a list of CPU code that does all of its side effects. 
+                        </p>
+                        <p>
+                            I have no idea how to work on something like this. I don’t see anyone wanting me to learn how for my day job so likely this will stay just an idea, but it was fun to put this idea on paper. Since 2010 not one paper C++ has the word debug in the title maybe that is saying now is a good time to think about how to debug C++ in a new way. 
+                        </p>
+        </div>
+
+        </article>
+        </section>
+        <footer>
+            <ul class="footer_nav">
+                <li><a href="index.html">HOME</a></li>
+                <li><a href="blog.html">BLOG</a></li>
+                <li><a href="about.html">ABOUT</a></li>
+                <li><a href="contact.html">CONTACT</a></li>
+                <li><a href="presentation.html">PRESENTATION</a></li>
+            </ul>
+            <div class="social_media">
+                <a href="https://twitter.com/scottrwardle"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                <a href="https://www.linkedin.com/in/scottwardle"><i class="fa fa-linkedin" aria-hidden="true"></i></a>
+            </div>
+            <p>&copy; SCOTT WARDLE 2018</p>
+        </footer>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="dist/js/animsition.min.js" charset="utf-8"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/name_anim.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.animsition').animsition();
+        });
+    </script>
+</body>
+
+</html>
