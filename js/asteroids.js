@@ -817,11 +817,6 @@ var asteroids;
         }
     }
     asteroids.newGame = newGame;
-    function DoNothing(e) {
-        e.preventDefault();
-        return false;
-    }
-    asteroids.DoNothing = DoNothing;
     function HtmlButtonDown(button, type, e) {
         if (gGame !== null /* &&
             isMobile() && type === "touch") ||
@@ -878,6 +873,11 @@ var asteroids;
         }
     }
     asteroids.HtmlButtonUp = HtmlButtonUp;
+    function DoNothing(e) {
+        e.preventDefault();
+        return false;
+    }
+    asteroids.DoNothing = DoNothing;
 })(asteroids || (asteroids = {}));
 window.onload = function () {
     asteroids.newGame();

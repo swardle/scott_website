@@ -896,12 +896,6 @@ namespace asteroids {
             gGame.Draw();
         }
     }
-
-    export function DoNothing(e) : boolean {
-        e.preventDefault();  
-        return false;      
-    }
-
     export function HtmlButtonDown(button, type, e) {
         if (gGame !== null /* &&
             isMobile() && type === "touch") ||
@@ -924,11 +918,11 @@ namespace asteroids {
             e.preventDefault();
         }
     }
-    
+
     export function HtmlButtonUp(button, type, e) {
         if (gGame !== null /* &&
            (isMobile() && type === "touch") ||
-        (!isMobile() && type === "mouse")*/) {
+        (!isMobile() && type === "mouse")*/) {            
             let b: Buttons = gGame.getButtons();
             if (button.id  === "L") {
                 b.dir[0] = 0; // to left
@@ -947,6 +941,12 @@ namespace asteroids {
             e.preventDefault();
         }
     }
+
+    export function DoNothing(e): boolean {
+        e.preventDefault();
+        return false;
+    }
+
 }
 
 window.onload = () => {
