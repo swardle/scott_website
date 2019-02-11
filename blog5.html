@@ -94,32 +94,41 @@
                         <p>
                             <time datetime="2019-02-10">Feb 10, 2019</time>
                         </p>
-                        <img src="img/23.png" class="blog_img">
+                        <img src="img/19.jpg" class="blog_img">
                     </header>
                         <p>
-                            I am always coming up with ideas and I have a hard time putting them down. Currently I am waiting for a VISA for my next adventure, so I have some time to write a blog entry. Maybe by writing this idea down it will let me think about other things. This idea I have is a way to debug constexpr functions or other functions that have been 100% removed from the EXE and do this in a way that has very little overhead.  
+                            I am always coming up with ideas and I have a hard time putting them down. My current idea, looping though my mind, is a way to debug constexpr functions (or other functions that have been 100% removed from the EXE), in a way that has very little overhead.  
                         </p>
                         <p>
-                            I have been working as a C++ programmer for over 25 years. Normally I would say people might want to listen to even my crazy ideas. This idea is a little out of my comfort zone. I have never worked on a compiler or a debugger so me talking about how to write a new type of one is probably not the best idea. The idea comes from a debugger I saw written so even if ideas are cheap without implementations this idea is also cheap to write down and to understand so I hope this idea could be useful to you. 
+                            C++ is getting harder to debug, and by debug here I mean to watch a bug in slow motion in a debugger. With C++ “constexpr all of the things” libraries and crazy smart optimizing compilers can we fix this? 
                         </p>
                         <p>
-                            I think everyone feels C++ is getting harder to debug, and by debug here I mean to watch a bug in slow motion in a debugger. I use debuggers to help me read other people code or make sure my own unit tests are running correctly when I first write them.  With C++ “constexpr all of the things” libraries and crazy smart optimizing compilers this is getting harder to do.  So how could we fix this you can’t debug a constexpr function can you? 
+                            What if constexpr functions could optionally run on a virtual co-processor. Then you could set a breakpoint on this virtual co-processor code almost like a normal breakpoint. 
+                        </p>
+                        <p>
+                            A little history first about where this idea comes from. I wrote some Sin and Cos functions for EA that ran on PS2's VPU0 co-processor in the early 2000s. VPU0 was a CPU in it own right. It had 4k of instructions and 4 k of data + 16 16-bit integer registers and 32 128-bit floating point registers. The VPU0 was tricky to use VPU1 did most of the heavy lifting. (VPU1 did  what would be called vertex shaders today.) VPU0's trick was it was tightly coupled with the main EE mips cpu. If I remember right the EE had one instruction to kick off a VPU0 program at some address and another one to sleep until the VPU was done. This was great you could load a lot of small little programs like Sin or Cos or other small little math functions and even kick them asynchronously then wait on them.  But what if Sin or Cos in this case were given a constant parameter? With a modern compiler that could understand what both the CPU and VPU0 were doing the compiler could know it didn't need to call a VPU program to estimate some taylor series to get the Sin or Cos value. It could just simulate this at compile time. 
                         </p>
 
+                        <img src="img/VPU0SINCOS.png" class="blog_img">
+
                         <p>
-                            Let's start with a short summary about how a break point works in a debugger? A break point switches one instruction for a int 3 break or other illegal instruction. The CPU has an exception at this illegal instruction and in the exception, you gather all of the state for the debugger and save everything so you could continue again when you trace to the next instruction or set of instructions. The debugger read this saved state of CPUs registers and combine this with compliers debugging symbols and type information so you can view data in a watch window and see your call stacks etc.
+                            Now we need a short summary about how a breakpoint works, as this is the heart of a debugger. A breakpoint is when the debugger switches one instruction into an "int 3" or other illegal instruction. When the CPU hits int 3 a exception handler is called. The exception handler gathers all of the state from registors and saves everything, so you can continue where you left off. The CPU then idle loops waiting for the debugger to tell it to continue or trace to the next breakpoint or int 3 instruction.  The debugger reads this saved state and combines it  with complier's debug symbols and other type information to display the watch window and call stacks.
                         </p>
                         <p>
-                            The problem is with constexpr functions there is no instructions, no CPU or memory state to read or really anything to debug at all in the runtime. Well there is the return value side effect of the constexpr functions but that is it. Today if we work at it enough we can find these return values a constexpr function, but you can’t always tell why it is this value.  If  you are trying to write a JSON or REGEX parser or you are debugging taylor series in a constexpr Sin or Cos function this might be good to watch in slow motion. 
+                            The problem is with constexpr functions there is no instructions, no CPU or memory state to read or really anything to debug at all in the runtime. You can find the return value side effect of the constexpr functions but that is it, but you can’t tell why the value is the way it is.  If  you are trying to write a JSON or REGEX parser or you are debugging Taylor series in a constexpr Sin or Cos function reading what the compiler thought about in slow motion could be useful. 
                         </p>
                         <p>
-                            We could replace a constexpr functions return value with the code needed to create this constexpr return value. We don't want to do this all of the time as that would slow down our program. So let's have 2 ways of running a constexpr functions: one where we “step over” our constexpr function and just use the pre calulated return value of the function and another “step into” mode where we run code on a "virtual compile time machine” that has no side effect to the main CPU program but shows you why the return value is the value it is.  It would be useful if we could set a break point in this "virtual compile time machine” and it would break in this function everytime we called the constexpr functions. Then we could get a mixed CPU + "virtual compile time machine” call stack. 
+                            What if we replaced a constexpr's return value with the code needed to create this return value. We don't want to do this all of the time as that would slow down our program. What we want is 2 ways of running a constexpr function: 
+                            <ul>
+                                <li>A “step over” mode where we use the pre-calculated return value</li>
+                                <li>A “step into” mode where we run code on a virtual co-processor. Running in this program has no side effects to the main CPU program, but it us useful to show the programmer how the the return value was calculated in slow motion</li>
+                            </ul>
+                        </p>
+                        <p>                            
+                            It would be useful if we could set a breakpoint in this virtual co-processor and it would break in the constexpr function everytime we called it. Then we could get a mixed CPU + virtual co-processor call stack. I don't 100% remember how to debug on a PS2 but you could imagine mixed call stacks that included state from the EE and VPU0 functions. 
                         </p>
                         <p>
-                            So treat constexpr (and other optimized away functions) as if they were synchronous functions on some co-processor. This constexpr co-processor uses another memory space so there can be no side effects between the CPU world and the constexpr world. You use use the pre cached return values most of the time but if you trace into a function, you run the constexpr function on this virtual co-processor that has no side effects but it shows you why this return value is what it is. 
-                        </p>
-                        <p>
-                            Since I am an old school game programmer. I think of it as adding break points to PS2 VPU0 function. Maybe VPU is a good name for this process. Where VPU is a "virtual processing unit" not a "vector processing unit". In normal running of your program you don’t need this VPU program it just stays in the programs debug data on disk. No CPU memory is taken up no code space or anything. You just need the return value. The constexpr function has no side effects that is why the work could be moved to this VPU in the first place.  If you add a break point to the VPU code a real break point exception instruction would also be added at this return value location. When you hit this real break point the flow of code would be transferred to the VPU constexpr co-processor. This now loaded VPU program would have a break point added to it as well.  Once you hit the VPU break point you would show the state of the real CPU and the virtual VPU. The runtime cost of this system would be the cost of the virtual VPU co-processor. In an OS this could be in another process, in small embedded devices you could run this VPU co-processor on the host debugger and not on the small 8-bit embedded device with 512 bytes of ram. 
+                            There is one thing different then a VPU0 breakpoint. We don't always call the virtual co-processor like we would in the VPU0 case. We don't even want the code to load parameters etc... we only want to store the return value of the constexpr function. So when we add a breakpoint in some virtual co-processor function we will need to find all call sites and add a int 3 real CPU breakpoint there. The debugger knowing that this is the start of a virtual co-processor call could interpret the constexpr function in slow motion. THe debugger would run all of the instructions scaning for the VPU breakpoint.  Once you hit the VPU breakpoint you would show the state of the real CPU and the virtual VPU. The runtime cost of this system would be zero (in your process anyways) unless you are running with a breakpoint in a constexpr function. Since the host debugger process would run the virtual co-processor code even a small embedded 8-bit embedded device with 512 bytes of ram this could still work. 
                         </p>
                         <p>
                             How about a more detail example with some code. 
@@ -154,7 +163,7 @@ main: # @main
 ret
                         </pre>
                         <p>
-                            Our goal is if we set a break point in runCallBack that I could even though runCallBack does not get called. To implement the break point we write an int 3 over the mov eax, 80.  When the computer hit this break the code would then be controlled by the debugger. The debugger could have a table of instructions address to the compilers debug VPU code. 
+                            Our goal is if we set a breakpoint in runCallBack that I could even though runCallBack does not get called. To implement the breakpoint we write an int 3 over the mov eax, 80.  When the computer hit this break the code would then be controlled by the debugger. The debugger could have a table of instructions address to the compilers debug VPU code. 
                         </p>
                         <pre>
 main: # @main
@@ -199,7 +208,7 @@ ret
                             This VPU code does not have to be intel instructions it could be clang IR or JVM or any other instruction set. When you call into this VPU ASM you would just make sure that no state could leak out. So it would be like this VPU was running on another virtual computer.                             
                         </p>
                         <p>
-                            You need the VPU ASM code so you have somewhere to set break points that you can step though this code if you want to. If you wanted to break just in between the 2 lambdas no problem.  Just set your VPU break point at that VPU ASM location and also set a real int 3 break point at each call site so the debugger can switch to the interpreted VPU code to search for the VPU break point.                             
+                            You need the VPU ASM code so you have somewhere to set breakpoints that you can step though this code if you want to. If you wanted to break just in between the 2 lambdas no problem.  Just set your VPU breakpoint at that VPU ASM location and also set a real int 3 breakpoint at each call site so the debugger can switch to the interpreted VPU code to search for the VPU breakpoint.                             
                         </p>
                         <p>
                             This can’t help all of C++ current debugging problems. Debuggers are getting harder to understand as compilers get better at reordering things as well. I don’t think that can help with this problem.  But if we want to add meta classes or something crazy like that we need to consider how we will slow things down so humans can read each other’s code. 
