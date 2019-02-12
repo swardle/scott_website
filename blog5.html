@@ -122,14 +122,14 @@
                             What if we replaced a constexpr's return value with the code needed to create this return value? We don't want to do this all of the time as that would slow down our program. What we want is 2 ways of running a constexpr function:
                             <ul>
                                 <li>A “step over” mode where we use the pre-calculated return value</li>
-                                <li>A “step into” mode where we run code on a virtual co-processor. Running in this program has no side effects to the main CPU program, but it is useful to show the programmer how the return value was calculated in slow motion</li>
+                                <li>A “step into” mode where we run code on a virtual co-processor. Running in this mode has no side effects to the main CPU program, but it is useful to show the programmer how the return value was calculated in slow motion</li>
                             </ul>
                         </p>
                         <p>                            
-                            It would be useful if we could set a breakpoint in this virtual co-processor and it would break in the constexpr function every time we called it. Then we could get a mixed CPU + virtual co-processor call stack. This is just like on the PS2 but you would be debugging a mixed call stack built out of the EE and VPU0 registers and other state.
+                            On ps2 you could add an VPU0 illegal instruction and break in the debugger like any other ASM function. The only differentce is you would get a mixed call stack showing both the EE and VPU0 registers and other state. It would be useful if we could set a breakpoint in this virtual co-processor and break somewhere in the constexpr function every time we called it and get a mixed CPU + virtual co-processor call stack. 
                         </p>
                         <p>
-                            There is one thing different then a VPU0 breakpoint. We don't always call the virtual co-processor like we would in the VPU0 case. We don't even want the code to load parameters etc... we only want to store the return value of the constexpr function. When we add a breakpoint in some virtual co-processor function, we will need to find all call sites and add an int 3 real CPU breakpoint there. The debugger knowing that this is the start of a virtual co-processor call could interpret the constexpr function in slow motion. The debugger would run all of the instructions scaning for the VPU breakpoint. Once you hit the VPU breakpoint you would show the state of the real CPU and the virtual VPU. The runtime cost of this system would be zero (in your process anyways) unless you are running with a breakpoint in a constexpr function. Since the host debugger process would run the virtual co-processor code even a small embedded 8-bit embedded device with 512 bytes of ram this could still work.
+                            There is one thing different then a VPU0 breakpoint. We don't always call the virtual co-processor like we would in the VPU0 case. We don't even want the code to load parameters etc... we only want to store the return value of the constexpr function. So for virtual co-processor breakpoints, we will need to find all call sites and add an real CPU breakpoint  int 3 there. The debugger would need a table to tell it instruction was a return value for a constexpr function, if we break here we could either step over or step into the virtual co-processor function so we would need 2 types of break points. If this was a step into break point the debugger would interpret the constexpr function in slow motion on the virtual co-processor. The debugger maybe would software interpret each virtual co-processor instruction, scaning for VPU breakpoints. If you hit a VPU breakpoint it would stop and show the state of the real CPU and the virtual VPU. The runtime cost of this system would be zero (in your process anyways) unless you are running with a step into breakpoint at a call site of a constexpr function. Since the host debugger would run the virtual co-processor code even a small 8-bit embedded device with 512 bytes of ram could debug large constexpr functions.
                         </p>
                         <p>
                             How about a more detail example with some code. 
@@ -164,7 +164,7 @@ main: # @main
 ret
                         </pre>
                         <p>
-                            Our goal is if we set a breakpoint in runCallBack that I could even though runCallBack does not get called. To implement the breakpoint we write an int 3 over the mov eax, 80.  When the computer hit this break the code would then be controlled by the debugger. The debugger could have a table of instructions address to the compilers debug VPU code. 
+                            Our goal is if we set a breakpoint in the runCallBack function an int 3 would be written over the mov eax, 80 and the debugger would track this as a step into breakpoint. Then at the position we set the break point in the runCallBack function a virtual co-processor int 3 like break instruction would be added. 
                         </p>
                         <pre>
 main: # @main
@@ -173,16 +173,16 @@ ret
                         </pre>
 
                         <p>
-                            We would need some type of table of instructions address to VPU code address to know how to jump from CPU space to the VPU co-processor space. 
+                            We would need some type of table of instructions address to virtual co-processor code address to know how to jump from CPU space to the virtual co-processor space. We would also need some state in the debugger telling it that the breakpoint at address 0x8000 was a step into break. 
                         <pre>
 0x8000: 0xffffffff60000000
                         </pre>
 
                         </p>
-                            Note that VPU address are not CPU addresses and are not really addressable by the CPU as they don’t really need to exist to make the program run.  They are like addresses in another process space.  Maybe just for debugging you would want addresses that can’t exist in the CPU address space just so you can never make the mistake. 
+                            Note that virtual co-processor address are not CPU addresses and should not be addressable by the CPU as they don’t really need to exist to make the program run.  They are like addresses in another process space. So you would probably make it an illegal address.  
                         <p>
                         <p>
-                            So what would be at VPU address 0xffffffff60000000 well the code that the compiler rightly optimized out. Maybe it would look like the code below.                             
+                            So at virtual co-processor address 0xffffffff60000000 would be the program the compiler rightly optimized out but that could be interpeted by the debugger. Maybe it would look like the code below. 
                         </p>                            
                         <pre>
 0xffffffff60000000:
@@ -206,20 +206,23 @@ pop rbp
 ret
                         </pre>                            
                         <p>
-                            This VPU code does not have to be intel instructions it could be clang IR or JVM or any other instruction set. When you call into this VPU ASM you would just make sure that no state could leak out. So it would be like this VPU was running on another virtual computer.                             
+                            This virtual co-processor code does not have to be intel instructions it could be clang IR or JVM or any other instruction set. When you call into this virtual co-processor ASM you would just make sure that no state could leak out. So the virtual co-processor acts like it was running on another virtual computer. 
                         </p>
                         <p>
-                            You need the VPU ASM code so you have somewhere to set breakpoints that you can step though this code if you want to. If you wanted to break just in between the 2 lambdas no problem.  Just set your VPU breakpoint at that VPU ASM location and also set a real int 3 breakpoint at each call site so the debugger can switch to the interpreted VPU code to search for the VPU breakpoint.                             
+                            The virtual co-processor ASM code would be there so you can set the breakpoints and see changes in state in the virtual co-processor in slow motion. If you wanted to break just in between the 2 lambdas no problem.  Just set your virtual co-processor breakpoint at that virtual co-processor ASM location and also set a real int 3 breakpoint at each call site so the debugger can switch to the interpreted code to search for the virtual co-processor breakpoint.                             
                         </p>
                         <p>
-                            This can’t help all of C++ current debugging problems. Debuggers are getting harder to understand as compilers get better at reordering things as well. I don’t think that can help with this problem.  But if we want to add meta classes or something crazy like that we need to consider how we will slow things down so humans can read each other’s code. 
+                            This idea will not solve all of C++'s current debugging problems. Debuggers are getting harder to use because compilers are getting better at reordering things. I don’t think this idea can help with reordering problems.  But with our current directions of adding meta classes and pushing more calculation to compile time, we need a way for us humans to slow things down so we can read each other’s code. 
                         </p>
                         <p>
-                            Also I don’t really know what to do with side effects here. Maybe VPU code should have no side effects just like constexpr code now. Maybe VPU code can jump back to CPU code to call print or do file IO. A call to a constexpr VPU function maybe looks like a list of CPU code that does all of its side effects. 
+                            What to do with side effects like printing. Maybe VPU code should have no side effects just like constexpr code now. Maybe VPU code can jump back to CPU code to call print or do file IO. A call to a constexpr VPU function maybe looks like a list of CPU code that does all of its side effects. 
                         </p>
                         <p>
-                            I have no idea how to work on something like this. I don’t see anyone wanting me to learn how for my day job so likely this will stay just an idea, but it was fun to put this idea on paper. Since 2010 not one paper C++ has the word debug in the title maybe that is saying now is a good time to think about how to debug C++ in a new way. 
+                            Unfortunately I have no idea how to work on something like this. I don’t see anyone letting me spend my day job time on this. So likely this will stay just an idea, but it was fun to think about this. 
                         </p>
+                        <p>
+                            One other thing I saw while writing this, since 2010 (and maybe before) not one C++ paper has the word debug in the title. Maybe that is saying now would be a good time to think about how we should debug C++ in a new way. 
+                        </p>                        
         </div>
 
         </article>
