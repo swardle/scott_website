@@ -56,7 +56,7 @@ a {
     color: #4A4A4A;
 }
 
-p{
+p,ul{
    font-family: 'Roboto', sans-serif;
     letter-spacing: 1px;
     color: #4A4A4A; 
