@@ -223,7 +223,7 @@ ret
                             The example above is a simple leaf function. Can it work with inline wrapper functions? Maybe but it gets harder. 
                         </p>
                         <p>
-                            I have seen inline functions come and go while working on clang compiler-based games. Sometime inline functions of these types will show up in the debugger's call stacks and other versions of the compiler they will disappear again.  So I assume I am not the only one thinking about this problem. They seem to be doing it by looking at the current program address if you are no longer in the current function you must have called a new function. This is a interseting idea. This would need some type of static analysis to see how many inline functions deep you are from a real function.  
+                            I have seen inline functions come and go while working on clang compiler-based games. Sometime inline functions of these types will show up in the debugger's call stacks and other versions of the compiler they will disappear again.  So I assume I am not the only one thinking about this problem. They seem to be doing it by looking at the current program address if you are no longer in the current function you must have called a new function. This is an interesting idea. This would need some type of static analysis to see how many inline functions deep you are from a real function.  
                         </p>
                         <p>
                             Mostly I don’t want these small inline functions in the debugger but sometimes it would be nice to see them. It would be very nice to set breakpoints on these wrapper functions and being able to choose this at runtime dynamically might be a good solusion.  
@@ -287,7 +287,7 @@ BeforeDoWork2: VCPBeforeDoWork2
                         </pre>
 
                         <p>
-                            Finally below is the the virtual co-processor trampoline code and debugable function ASM. You can see how there is jmp statements to jump to after the inline side effects. You can see the virtual co-processor wrapped doworkwrapper has normal CPU side effects. We would also have to make a call to a normal CPU function dowork. If a virtual co-processor function calls a normal function you would need some trick to return back into the virtual co-processor memory space. If the  virtual co-processor addresses are bad addresses to the main CPU you can handle these returns with a virtual memory error handler to pop back over to the virtual co-processor side. The virtual co-processor state like registers etc... would have to have some life time. If you called a virtual co-processor on some hardware thread then you would have to keep all state for this virtual co-processor until you returned from this function. You would reuse this virtual co-processor state if you called a normal->virtual co-processor->normal->virtual co-processor recursive set of calls. 
+                            Finally below is the the virtual co-processor trampoline code and debugable function ASM. You can see how there is jmp statements to jump after the inline side effects. You can see the virtual co-processor wrapped doworkwrapper has normal CPU side effects. 
                         </p>
 
                         <pre>
@@ -309,6 +309,10 @@ NormalCall dowork(int, int) # Illegal break so the CPU can return to virtual co-
 ret
 
                         </pre>                                                
+                        
+                        <p>
+                            You can also see the need to call the normal CPU function dowork. If a virtual co-processor function calls a normal function you would need some trick to return back into the virtual co-processor memory space. If the virtual co-processor addresses, are bad addresses, to the main CPU you can handle these returns with a virtual memory error handler to pop back to the virtual co-processor side. The virtual co-processor state like registers etc... would have to have some life time. If you called a virtual co-processor on some hardware thread then you would have to keep all state for this virtual co-processor until you returned from this function. You would reuse this virtual co-processor state if you called a normal->virtual co-processor->normal->virtual co-processor recursive set of calls. 
+                        </p>
 
                         <p>
                             I don't think this idea would solve all of C++'s current debugging problems. Debuggers are getting harder to use because compilers are getting better at reordering things. I don’t think this idea can help with reordering problems. But with our current directions
