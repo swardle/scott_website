@@ -98,7 +98,7 @@
                         <p>
                             <time datetime="2019-02-10">Feb 10, 2019</time>
                         </p>
-                        <img src="img/24.png" class="blog_img">
+                        <img src="img/24.jpg" class="blog_img">
                     </header>
                     <p>
                         I was looking through C++ papers and since 2010 (and maybe before) not one iso C++ paper has been submitted on debugging. So maybe now is a good time to think about how we should debug C++ in a new way.
@@ -309,7 +309,7 @@ NormalCall dowork(int, int) # Illegal break so the CPU can return to virtual co-
 ret
 
                         </pre>                                                
-                        
+
                         <p>
                             You can also see the need to call the normal CPU function dowork. If a virtual co-processor function calls a normal function you would need some trick to return back into the virtual co-processor memory space. If the virtual co-processor addresses, are bad addresses, to the main CPU you can handle these returns with a virtual memory error handler to pop back to the virtual co-processor side. The virtual co-processor state like registers etc... would have to have some life time. If you called a virtual co-processor on some hardware thread then you would have to keep all state for this virtual co-processor until you returned from this function. You would reuse this virtual co-processor state if you called a normal->virtual co-processor->normal->virtual co-processor recursive set of calls. 
                         </p>
@@ -346,7 +346,6 @@ ret
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="dist/js/animsition.min.js" charset="utf-8"></script>
     <script src="js/menu.js"></script>
-    <script src="js/name_anim.js"></script>
     <script>
         $(document).ready(function() {
             $('.animsition').animsition();
