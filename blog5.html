@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
                         </pre>
 
                     <p>
-                        Hopefully the compiler can see though all of the abstractions I have put in its way and we should get some ASM generated like below. The return value of the constexpr is at instruction address 0x8000.
+                        Hopefully the compiler can see through all of the abstractions and we should get some ASM generated like below. The return value of the constexpr is at instruction address 0x8000.
                     </p>
 
                     <pre>
@@ -218,12 +218,104 @@ ret
                             The virtual co-processor ASM code would be there so you can set the breakpoints and see changes in state in the virtual co-processor in slow motion. If you wanted to break just in between the 2 lambdas no problem. Just set your virtual co-processor breakpoint
                             at that virtual co-processor ASM location and also set a real int 3 breakpoint at each call site so the debugger can switch to the interpreted code to search for the virtual co-processor breakpoint.
                         </p>
+
                         <p>
-                            This idea will not solve all of C++'s current debugging problems. Debuggers are getting harder to use because compilers are getting better at reordering things. I don’t think this idea can help with reordering problems. But with our current directions
-                            of adding meta classes and pushing more calculation to compile time, we need a way for us humans to slow things down so we can read each other’s code.
+                            The example above is a simple leaf function. Can it work with inline wrapper functions with no side effects? Maybe but it gets a lot harder. 
                         </p>
                         <p>
-                            What to do with side effects like printing. Maybe virtual co-processor code should have no side effects just like constexpr code now. Maybe virtual co-processor code can jump back to CPU code to call print or do file IO. A call to a virtual co-processor function maybe looks like a list of CPU instructions that does all of its side effects.
+                            I have seen inline functions come and go while working on clang compiler-based games. Sometime inline functions of these types will show up in the debugger's call stacks and other versions of the compiler they will disappear again.  So I assume I am not the only one thinking about this problem. They seem to be doing it by looking at the current program address if you are no longer in the current function you must have called a new function. This is a interseting idea. It will only work one function deep. 
+                        </p>
+                        <p>
+                            Mostly I don’t want these small inline functions in the debugger but sometimes it would be nice to see them. It would be very nice to set breakpoints on these wrapper functions and being able to choose this at runtime dynamically might be a good solusion.  
+                        </p>
+                        <p>
+                            So, let’s say we have a new function dowork that can’t be inlined. But we have some small wrapper that does very little and so the compiler just removes this wrapper function like the code below. 
+                        </p>
+                        <pre>
+extern int dowork(int a, int b);
+int doworkwrapper(int a, int b)
+{
+    return dowork(a+1,b+3);
+}
+
+int main(int argc, char *argv[])
+{
+    return doworkwrapper(20,40) + doworkwrapper(10,30);
+}
+
+                        </pre>
+                        <p>
+                            The optimized normal CPU ASM would look something like the listing below. I will use named locations, not hex addresses to make things easier to understand. So look for address labels like "BeforeDoWork" and "AfterDoWork". 
+                        </p>
+                        <pre>
+main: # @main
+push rbx
+BeforeDoWork:
+mov edi, 21
+mov esi, 43
+call dowork(int, int)
+mov ebx, eax
+AfterDoWork:
+BeforeDoWork2:
+mov edi, 11
+mov esi, 33
+call dowork(int, int)
+AfterDoWork2:
+add eax, ebx
+pop rbx
+ret
+                        </pre>                        
+                        <p>
+                            With this example we can see a new problem more clearly. The parameters are mixed with the side effects of the inlined function. We expect to see 20 and 40 but see 21 and 43 instead. 
+                        </p>
+                        <p>
+                            If we tried to make a doworkwrapper virtual co-processor but still call dowork with it's posable side effects on the main CPU how does this work? The virtual co-processor would also have to call a main CPU functions some how. One way to pass constant parameters to a function on another CPU would be to write trampoline code to load the parameters then call the functions in question. This is what I was thinking for normal CPU to virtual co-processor calls. I did this so I didn't have to add any code to the main CPU memory space. For a virtual co-processor to main CPU this is different the trampoline code would have to be in the main CPU memory so this does not work with out changing the normal CPU memory. Another idea is let the virtual co-processor have institutions that change the main CPU registers so it can have side effects. 
+                        </p>
+                        <p>
+                            We will need to not call the dowork function twice so, we will set a breakpoint before the parameters were read and make the virtual co-processor function return after these side effects with the trampoline code. The goal is to ignore the optimized mixed parameters values and load the unchanged value instead. Then return to the spot after the all of the side effects of the inline function.  This is easy enough for me as a human, how difficult this is for a compiler is an open question. 
+                        </p>
+                        <p>
+                            Like before you would need some type of side table that tells you when and how to jump into the virtual co-processor functions (and you would need some state to say if you wanted to or not in the debugger). For this more complicated case you would want to jmp after the side effect of the inlineing from the end of virtual co-processor function. I think we could add this parameters loading and jump back after side effects to the generated trampoline code.                             
+                        </p>
+                        <p>
+                            Here is the normal CPU to virtual co-processor optional jump table. 
+                        </p>
+
+                        <pre>
+BeforeDoWork: VCPBeforeDoWork
+BeforeDoWork2: VCPBeforeDoWork2
+                        </pre>
+
+                        <p>
+                            And finally below is the the virtual co-processor trampoline code and debugable function ASM. You can see how there is jmp statements to jump to after the inline side effects. Wrapped function doworkwrapper is nearly all side effects in this case. We would also have to make a call to a normal CPU function work. Since normal CPU returns just jump to some address maybe we could get the debugger to know about jmp to a known bad address to pop back over to the virtual co-processor side. Probably this would mean the state like registers etc... on the virtual co-processor would have to have some life time. 
+                        </p>
+
+                        <pre>
+VCPBeforeDoWork:
+mov edi, 20
+mov esi, 40
+call doworkwrapper(int, int)
+mov ebx, eax
+jmp AfterDoWork
+VCPBeforeDoWork:
+mov edi, 10
+mov esi, 30
+call doworkwrapper(int, int)
+jmp AfterDoWork2
+doworkwrapper(int, int): # @doworkwrapper(int, int)
+add NormalEdi, edi, 1 # side effect changes a main CPU register
+add NormalEsi, edi, 3 # side effect changes a main CPU register
+NormalCall dowork(int, int) # Illegal break so the CPU can return to virtual co-processor function?
+ret
+
+                        </pre>                                                
+
+                        <p>
+                            I don't think this idea would solve all of C++'s current debugging problems. Debuggers are getting harder to use because compilers are getting better at reordering things. I don’t think this idea can help with reordering problems. But with our current directions
+                            of adding meta classes and pushing more calculation to compile time, we need a way for us humans to slow things down so we can read each other’s code. Maybe some system like this to jump in and out of runtime and compile time would be useful. 
+                        </p>
+                        <p>
+                            What to do with side effects like printing. Maybe virtual co-processor code should have no side effects just like constexpr code now. Maybe virtual co-processor code can jump back to CPU code to call print or do file IO. To me a call to a virtual co-processor function looks like a list of CPU instructions that does all of its side effects. With some trampoline code maybe we could just hop over these side effects and have the virtual co-processor do them. 
                         </p>
                         <p>
                             Unfortunately, I have no idea how to work on something like this. I don’t see anyone letting me spend my day job time on this. So likely this will stay just an idea, but it was fun to think about this.
