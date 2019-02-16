@@ -220,10 +220,10 @@ ret
                         </p>
 
                         <p>
-                            The example above is a simple leaf function. Can it work with inline wrapper functions with no side effects? Maybe but it gets a lot harder. 
+                            The example above is a simple leaf function. Can it work with inline wrapper functions? Maybe but it gets harder. 
                         </p>
                         <p>
-                            I have seen inline functions come and go while working on clang compiler-based games. Sometime inline functions of these types will show up in the debugger's call stacks and other versions of the compiler they will disappear again.  So I assume I am not the only one thinking about this problem. They seem to be doing it by looking at the current program address if you are no longer in the current function you must have called a new function. This is a interseting idea. It will only work one function deep. 
+                            I have seen inline functions come and go while working on clang compiler-based games. Sometime inline functions of these types will show up in the debugger's call stacks and other versions of the compiler they will disappear again.  So I assume I am not the only one thinking about this problem. They seem to be doing it by looking at the current program address if you are no longer in the current function you must have called a new function. This is a interseting idea. This would need some type of static analysis to see how many inline functions deep you are from a real function.  
                         </p>
                         <p>
                             Mostly I don’t want these small inline functions in the debugger but sometimes it would be nice to see them. It would be very nice to set breakpoints on these wrapper functions and being able to choose this at runtime dynamically might be a good solusion.  
@@ -251,14 +251,14 @@ int main(int argc, char *argv[])
 main: # @main
 push rbx
 BeforeDoWork:
-mov edi, 21
-mov esi, 43
+mov edi, 21     // 20+1 parameters are mixed with the side effects of the inlined function
+mov esi, 43     // 40+3 parameters are mixed with the side effects of the inlined function
 call dowork(int, int)
 mov ebx, eax
 AfterDoWork:
 BeforeDoWork2:
-mov edi, 11
-mov esi, 33
+mov edi, 11     // 10+1 parameters are mixed with the side effects of the inlined function
+mov esi, 33     // 30+3 parameters are mixed with the side effects of the inlined function
 call dowork(int, int)
 AfterDoWork2:
 add eax, ebx
@@ -269,13 +269,13 @@ ret
                             With this example we can see a new problem more clearly. The parameters are mixed with the side effects of the inlined function. We expect to see 20 and 40 but see 21 and 43 instead. 
                         </p>
                         <p>
-                            If we tried to make a doworkwrapper virtual co-processor but still call dowork with it's posable side effects on the main CPU how does this work? The virtual co-processor would also have to call a main CPU functions some how. One way to pass constant parameters to a function on another CPU would be to write trampoline code to load the parameters then call the functions in question. This is what I was thinking for normal CPU to virtual co-processor calls. I did this so I didn't have to add any code to the main CPU memory space. For a virtual co-processor to main CPU this is different the trampoline code would have to be in the main CPU memory so this does not work with out changing the normal CPU memory. Another idea is let the virtual co-processor have institutions that change the main CPU registers so it can have side effects. 
+                            If we tried to make a doworkwrapper virtual co-processor but still call dowork with it's posable side effects on the main CPU how does this work? The virtual co-processor would also have to call a main CPU functions some how. One way to pass constant parameters to a function on another CPU would be to write trampoline code to load the parameters then call the functions in question. This is what I was thinking for normal CPU to virtual co-processor calls. I did this so I didn't have to add any code to the main CPU memory space. For a virtual co-processor to main CPU this is different the trampoline code would have to be in the main CPU memory so this does not work with out changing the normal CPU memory. For now I let the virtual co-processor have instructions that can change the main CPU registers. This would mean virtual co-processor code can have side effects in the main CPU memory space but as of yet I don't think I need the side effects the other way around. 
                         </p>
                         <p>
                             We will need to not call the dowork function twice so, we will set a breakpoint before the parameters were read and make the virtual co-processor function return after these side effects with the trampoline code. The goal is to ignore the optimized mixed parameters values and load the unchanged value instead. Then return to the spot after the all of the side effects of the inline function.  This is easy enough for me as a human, how difficult this is for a compiler is an open question. 
                         </p>
                         <p>
-                            Like before you would need some type of side table that tells you when and how to jump into the virtual co-processor functions (and you would need some state to say if you wanted to or not in the debugger). For this more complicated case you would want to jmp after the side effect of the inlineing from the end of virtual co-processor function. I think we could add this parameters loading and jump back after side effects to the generated trampoline code.                             
+                            Like before you would need some type of side table that tells you when and how to jump into the virtual co-processor functions (and you would need some state to say if you wanted to or not in the debugger).  In this case the return address of the virtual co-processor function would not be the same as the address of the call as you want to return back after the side effects of the inlineing. At least in this simple version I was able to generate trampoline code that did this by hand. 
                         </p>
                         <p>
                             Here is the normal CPU to virtual co-processor optional jump table. 
@@ -287,7 +287,7 @@ BeforeDoWork2: VCPBeforeDoWork2
                         </pre>
 
                         <p>
-                            And finally below is the the virtual co-processor trampoline code and debugable function ASM. You can see how there is jmp statements to jump to after the inline side effects. Wrapped function doworkwrapper is nearly all side effects in this case. We would also have to make a call to a normal CPU function work. Since normal CPU returns just jump to some address maybe we could get the debugger to know about jmp to a known bad address to pop back over to the virtual co-processor side. Probably this would mean the state like registers etc... on the virtual co-processor would have to have some life time. 
+                            Finally below is the the virtual co-processor trampoline code and debugable function ASM. You can see how there is jmp statements to jump to after the inline side effects. You can see the virtual co-processor wrapped doworkwrapper has normal CPU side effects. We would also have to make a call to a normal CPU function dowork. If a virtual co-processor function calls a normal function you would need some trick to return back into the virtual co-processor memory space. If the  virtual co-processor addresses are bad addresses to the main CPU you can handle these returns with a virtual memory error handler to pop back over to the virtual co-processor side. The virtual co-processor state like registers etc... would have to have some life time. If you called a virtual co-processor on some hardware thread then you would have to keep all state for this virtual co-processor until you returned from this function. You would reuse this virtual co-processor state if you called a normal->virtual co-processor->normal->virtual co-processor recursive set of calls. 
                         </p>
 
                         <pre>
