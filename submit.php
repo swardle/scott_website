@@ -30,7 +30,7 @@
 	if ($forward == 1) { 
 	   # header ("Location:$location"); 
 
-	   echo ('<script type="text/javascript">location.href = ' . $location . ';</script>'); 
+	   echo ('<script type="text/javascript">location.href = "' . $location . '"</script>'); 
 	} 
 	else { 
 	   echo ("Thank you for submitting our form. I will get back to you as soon as possible."); 
