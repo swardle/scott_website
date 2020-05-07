@@ -14,5 +14,5 @@ do
 		mv ~/public_html/scott_website ~/public_html/sweb
 		echo hi there5
 	fi
-	sleep 5
+	sleep 60
 done
