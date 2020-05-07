@@ -2,7 +2,6 @@
 
 while true
 do
-	echo hi there
 	git fetch;
 	LOCAL=$(git rev-parse HEAD);
 	REMOTE=$(git rev-parse @{u});
@@ -13,8 +12,7 @@ do
 		#pull and merge changes
 		git pull origin master;
 		mv ~/public_html/scott_website ~/public_html/sweb
-		echo hi there3
+		echo hi there5
 	fi
 	sleep 5
-	echo hi there4
 done
