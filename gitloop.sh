@@ -11,6 +11,7 @@ REMOTE=$(git rev-parse @{u});
 if [ $LOCAL != $REMOTE ]; then
     #pull and merge changes
     git pull origin master;
+    mv ~/public_html/scott_website ~/public_html/sweb
 fi
-sleep 5
+sleep 60
 done
