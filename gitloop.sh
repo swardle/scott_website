@@ -1,7 +1,6 @@
 #!/bin/sh
 
-while true
-
+while true do
 	git fetch;
 	LOCAL=$(git rev-parse HEAD);
 	REMOTE=$(git rev-parse @{u});
@@ -13,5 +12,4 @@ while true
 		mv ~/public_html/scott_website ~/public_html/sweb
 	fi
 	sleep 60
-
-do
+done
