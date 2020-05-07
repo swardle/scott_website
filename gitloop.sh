@@ -11,7 +11,8 @@ do
 	if [ $LOCAL != $REMOTE ]; then
 		#pull and merge changes
 		git pull origin master;
-		mv ~/public_html/scott_website ~/public_html/sweb
+		cp -r ~/public_html/scott_website ~/public_html/scott_website_temp
+		mv ~/public_html/scott_website_temp ~/public_html/sweb
 		echo hi there5
 	fi
 	sleep 60
