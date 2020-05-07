@@ -5,15 +5,14 @@ do
 	git fetch;
 	LOCAL=$(git rev-parse HEAD);
 	REMOTE=$(git rev-parse @{u});
-	echo hi there2 $LOCAL != $REMOTE
+	echo looking for change $LOCAL != $REMOTE
 
 	#if our local revision id doesn't match the remote, we will need to pull the changes
 	if [ $LOCAL != $REMOTE ]; then
+		echo found a difference
 		#pull and merge changes
 		git pull origin master;
-		cp -r ~/public_html/scott_website ~/public_html/scott_website_temp/
-		mv ~/public_html/scott_website_temp ~/public_html/sweb/
-		echo hi there5
+		rsync -a ~/public_html/scott_website/ ~/public_html/sweb/
 	fi
 	sleep 60
 done
