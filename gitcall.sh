@@ -12,4 +12,4 @@ if [ $LOCAL != $REMOTE ]; then
     git pull origin master;
     rsync -a ~/public_html/scott_website/ ~/public_html/sweb/
 fi
-sleep 60
+sleep 5
