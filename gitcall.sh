@@ -1,5 +1,6 @@
 #!/bin/sh
 
+cd ~/public_html/scott_website/
 git fetch;
 LOCAL=$(git rev-parse HEAD);
 REMOTE=$(git rev-parse @{u});
