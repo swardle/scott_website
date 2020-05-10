@@ -1,5 +1,6 @@
 #!/bin/sh
 
+now=$(date)
 cd 	/home2/swardlec/repositories/scott_website/
 git fetch;
 LOCAL=$(git rev-parse HEAD);
