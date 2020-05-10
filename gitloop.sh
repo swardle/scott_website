@@ -1,6 +1,19 @@
 #!/bin/sh
 
-while true
-do
-	. gitcall.sh
-done
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
+. gitcall.sh
