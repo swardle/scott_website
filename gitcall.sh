@@ -12,6 +12,6 @@ if [ $LOCAL != $REMOTE ]; then
     echo found a difference >> /home2/swardlec/gitloop.txt
     #pull and merge changes
     git pull origin master;
-    rsync -a /home2/swardlec/repositories/scott_website/ /home2/swardlec/public_html/sweb/
+    rsync -a -inplace /home2/swardlec/repositories/scott_website/ /home2/swardlec/public_html/sweb/
 fi
 sleep 60
