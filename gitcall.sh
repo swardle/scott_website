@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# test
+
 now=$(date)
 cd 	/home2/swardlec/repositories/scott_website/
 git fetch;
