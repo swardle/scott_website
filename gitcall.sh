@@ -14,6 +14,6 @@ if [ $LOCAL != $REMOTE ]; then
     echo found a difference
     #pull and merge changes
     git pull origin master;
-    rsync -a -inplace -delete /home2/swardlec/repositories/scott_website/ /home2/swardlec/public_html/sweb/
+    rsync -a --inplace --delete /home2/swardlec/repositories/scott_website/ /home2/swardlec/public_html/sweb/
 fi
 sleep 60
